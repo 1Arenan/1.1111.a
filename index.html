@@ -1,90 +1,179 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
-    <title>Em busca da cidade perdida</title>
+    <title>Mini Jogo de Corrida</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #222;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        h2 {
+            margin-bottom: 5px;
+        }
+        canvas {
+            background-color: #444;
+            border: 5px solid #777;
+            box-shadow: 0 0 15px black;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-    <main>
-        <div class="passo ativo" id="passo-0">
-            <img src="img/cenario-passo0.png" alt="">
-            <p>Um dia desses, dentro de um livro da biblioteca da escola, eu descobri uma carta antiga sobre uma cidade perdida, escondida por riquezas e belezas naturais. Nessa carta, a autora deixa algumas pistas para encontrar essa cidade e eu decidi segui-las!</p>
-            <button class="btn-proximo" data-proximo="1">Rio de Janeiro</button>
-            <button class="btn-proximo" data-proximo="2">Pernambuco</button>
-        </div>
-        <div class="passo" id="passo-1">
-            <p>Você começa sua jornada no Rio de Janeiro, subindo o Pico da Tijuca ao amanhecer para encontrar a primeira pista.</p>
-            <button class="btn-proximo" data-proximo="3">Procurar a pista no topo do pico</button>
-            <button class="btn-proximo" data-proximo="4">Desistir e voltar para casa</button>
-        </div>
-        <div class="passo" id="passo-2">
-            <p>Em Pernambuco, você visita a histórica cidade de Olinda. Na carta, uma das pistas indica que para localizar a entrada para a cidade perdida você deve procurar a próxima pista em um dos pontos turísticos da cidade. Por qual você começa?</p>
-            <button class="btn-proximo" data-proximo="5">Investigar as igrejas antigas</button>
-            <button class="btn-proximo" data-proximo="6">Explorar as praias próximas</button>
-        </div>
-        <div class="passo" id="passo-3">
-            <p>No topo do Pico da Tijuca, você encontra uma antiga inscrição apontando que a próxima pista está
-                localizada no Amazonas.</p>
-            <button class="btn-proximo" data-proximo="7">Seguir para o Amazonas</button>
-        </div>
 
-        <div class="passo" id="passo-4">
-            <img src="img/cenario-passo4-voltar-casa.png" alt="imagem voltando para casa e desitindo da aventura">
-            <p>Você decide que a aventura é grande demais e volta para casa, mas sempre se pergunta o que teria
-                encontrado.</p>
-        </div>
+    <h2>🚦 Mini Corrida Retrô 🚦</h2>
+    <p>Use as <b>setas Esquerda e Direita</b> do teclado para desviar dos carros vermelhos!</p>
+    
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
 
-        <div class="passo" id="passo-5">
-            <p>Nas igrejas de Olinda, você descobre um mapa antigo escondido atrás de um altar, apontando que a próxima
-                pista está no Amazonas.</p>
-            <button class="btn-proximo" data-proximo="7">Viajar para o Amazonas</button>
-        </div>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
 
-        <div class="passo" id="passo-6">
-            <p>Explorando as praias, você encontra uma caverna escondida, mas ela leva a um beco sem saída.</p>
-            <button class="btn-proximo" data-proximo="8">Voltar e explorar as igrejas</button>
-        </div>
+        // Configurações do carro do jogador
+        let carWidth = 40;
+        let carHeight = 70;
+        let playerX = canvas.width / 2 - carWidth / 2;
+        let playerY = canvas.height - carHeight - 20;
+        let playerSpeed = 6; // Velocidade de movimento lateral
 
-        <div class="passo" id="passo-7">
-            <p>No Amazonas, a busca pela cidade perdida se intensifica. Você se depara com um rio bifurcado.</p>
-            <button class="btn-proximo" data-proximo="9">Seguir pelo rio à esquerda</button>
-            <button class="btn-proximo" data-proximo="10">Seguir pelo rio à direita</button>
-        </div>
+        // Controles
+        let leftPressed = false;
+        let rightPressed = false;
 
-        <div class="passo" id="passo-8">
-            <p>De volta às igrejas, você finalmente encontra o mapa antigo. Agora, para o Amazonas!</p>
-            <button class="btn-proximo" data-proximo="7">Seguir para o Amazonas</button>
-        </div>
+        // Variáveis do jogo
+        let obstacles = [];
+        let score = 0;
+        let gameSpeed = 4; // Velocidade da pista
+        let isGameOver = false;
 
-        <div class="passo" id="passo-9">
-            <p>O rio à esquerda leva você a uma cachoeira escondida com inscrições antigas que revelam a entrada da
-                cidade perdida.</p>
-            <button class="btn-proximo" data-proximo="11">Explorar a cidade perdida</button>
-        </div>
+        // Escuta os botões do teclado
+        document.addEventListener("keydown", keyDownHandler, false);
+        document.addEventListener("keyup", keyUpHandler, false);
 
-        <div class="passo" id="passo-10">
-            <p>O rio à direita termina em uma área pantanosa. Apesar de belas vistas, não há sinais da cidade perdida
-                aqui.</p>
-            <button class="btn-proximo" data-proximo="12">Retornar e tentar o outro rio</button>
-        </div>
+        function keyDownHandler(e) {
+            if(e.key == "Right" || e.key == "ArrowRight") rightPressed = true;
+            else if(e.key == "Left" || e.key == "ArrowLeft") leftPressed = true;
+        }
 
-        <div class="passo" id="passo-11">
-            <img src="img/cenario-passo11-cidade-perdida.png" alt="encontrando uma cidade maravilhosa perdida no Amazonas">
-            <p>Dentro da cidade perdida, você descobre tesouros inimagináveis e decide se dedicar a estudar e preservar
-                este lugar</p>
-        </div>
+        function keyUpHandler(e) {
+            if(e.key == "Right" || e.key == "ArrowRight") rightPressed = false;
+            else if(e.key == "Left" || e.key == "ArrowLeft") leftPressed = false;
+        }
 
-        <div class="passo" id="passo-12">
-            <p>Retornando e escolhendo o rio à esquerda, você finalmente encontra a cachoeira escondida e as inscrições
-                que levam à cidade perdida.</p>
-            <button class="btn-proximo" data-proximo="11">Explorar a cidade perdida</button>
-        </div>
-    </main>
-    <script src="script.js"></script>
+        // Função para desenhar os carros
+        function drawCar(x, y, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, carWidth, carHeight);
+            
+            // Desenha os vidros para parecer mais com um carro
+            ctx.fillStyle = "#add8e6"; // Azul claro
+            ctx.fillRect(x + 5, y + 10, carWidth - 10, 15); // Para-brisa
+            ctx.fillRect(x + 5, y + 45, carWidth - 10, 15); // Vidro traseiro
+        }
+
+        // Função para desenhar a faixa da estrada
+        function drawRoad() {
+            ctx.fillStyle = "white";
+            ctx.setLineDash([30, 30]); // Cria o efeito pontilhado
+            ctx.beginPath();
+            // Move a linha para criar ilusão de velocidade
+            ctx.moveTo(canvas.width / 2, 0 - (score % 60)); 
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = "white";
+            ctx.stroke();
+        }
+
+        // Função para desenhar a pontuação
+        function drawScore() {
+            ctx.font = "20px Arial";
+            ctx.fillStyle = "yellow";
+            ctx.fillText("Pontos: " + Math.floor(score / 10), 10, 30);
+        }
+
+        // Tela de Fim de Jogo
+        function drawGameOver() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.font = "40px Arial";
+            ctx.fillStyle = "red";
+            ctx.fillText("BATIDA!", 120, canvas.height / 2);
+            ctx.font = "20px Arial";
+            ctx.fillStyle = "white";
+            ctx.fillText("Aperte F5 para jogar de novo", 70, canvas.height / 2 + 40);
+        }
+
+        // Loop principal do jogo
+        function update() {
+            if (isGameOver) {
+                drawGameOver();
+                return; // Para o jogo se bater
+            }
+
+            // Limpa a tela a cada frame
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawRoad();
+            drawScore();
+
+            // Movimenta o jogador
+            if (rightPressed && playerX < canvas.width - carWidth) {
+                playerX += playerSpeed;
+            }
+            else if (leftPressed && playerX > 0) {
+                playerX -= playerSpeed;
+            }
+
+            // Desenha o jogador (Carro Azul)
+            drawCar(playerX, playerY, "#007BFF");
+
+            // Cria carros inimigos (obstáculos) aleatoriamente
+            if (Math.random() < 0.03) {
+                let obsX = Math.random() * (canvas.width - carWidth);
+                obstacles.push({x: obsX, y: -carHeight});
+            }
+
+            // Atualiza e desenha os inimigos
+            for (let i = 0; i < obstacles.length; i++) {
+                obstacles[i].y += gameSpeed; // Inimigo desce a tela
+                drawCar(obstacles[i].x, obstacles[i].y, "#DC3545"); // Carro Vermelho
+
+                // Lógica de Colisão (se o jogador bater no inimigo)
+                if (playerX < obstacles[i].x + carWidth &&
+                    playerX + carWidth > obstacles[i].x &&
+                    playerY < obstacles[i].y + carHeight &&
+                    carHeight + playerY > obstacles[i].y) {
+                    isGameOver = true;
+                }
+
+                // Remove os carros que já saíram da tela para não pesar o PC
+                if (obstacles[i].y > canvas.height) {
+                    obstacles.splice(i, 1);
+                    i--;
+                }
+            }
+
+            score++;
+            
+            // Aumenta a dificuldade com o tempo
+            if (score % 500 == 0) {
+                gameSpeed += 0.5;
+            }
+
+            // Chama o próximo frame
+            requestAnimationFrame(update);
+        }
+
+        // Inicia o jogo
+        update();
+    </script>
 </body>
 </html>
