@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Corrida 3D - Edição Cidade Noturna</title>
+    <title>Corrida 3D - Cidade Noturna & Supercarro Branco</title>
     <style>
         body {
             margin: 0;
@@ -19,7 +19,7 @@
             font-size: 26px;
             font-weight: bold;
             color: #fff;
-            text-shadow: 0 0 10px #00d2ff, 2px 2px 4px #000;
+            text-shadow: 0 0 10px #00f0ff, 2px 2px 4px #000;
             z-index: 10;
         }
         #game-over {
@@ -27,7 +27,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(10, 10, 20, 0.9);
+            background: rgba(10, 10, 20, 0.92);
             padding: 40px 60px;
             border: 2px solid #ff0055;
             border-radius: 12px;
@@ -54,8 +54,8 @@
     
     <div id="game-over">
         <h1>BATIDA NO TRÂNSITO! 💥</h1>
-        <p>Você bateu em alta velocidade na cidade!</p>
-        <p>Aperte <b>F5</b> para reiniciar a corrida.</p>
+        <p>Você bateu seu supercarro!</p>
+        <p>Aperte <b>F5</b> para jogar novamente.</p>
     </div>
 
     <script>
@@ -72,14 +72,14 @@
         document.body.appendChild(renderer.domElement);
 
         // Luzes Ambientais da Cidade
-        const ambientLight = new THREE.AmbientLight(0x333355, 0.8);
+        const ambientLight = new THREE.AmbientLight(0x444466, 0.8);
         scene.add(ambientLight);
 
-        const dirLight = new THREE.DirectionalLight(0xffddaa, 0.6);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
         dirLight.position.set(20, 40, 20);
         scene.add(dirLight);
 
-        // Dimensões
+        // Dimensões da Pista
         const roadWidth = 14;
         const roadLength = 250;
 
@@ -90,7 +90,7 @@
         road.rotation.x = -Math.PI / 2;
         scene.add(road);
 
-        // Calçadas nas laterais da pista
+        // Calçadas nas laterais
         const curbWidth = 3;
         const curbGeo = new THREE.PlaneGeometry(curbWidth, roadLength);
         const curbMat = new THREE.MeshPhongMaterial({ color: 0x444444 });
@@ -118,7 +118,7 @@
             stripes.push(stripe);
         }
 
-        // --- CONSTRUÇÃO DA CIDADE (PRÉDIOS E POSTES DE LUZ) ---
+        // --- CONSTRUÇÃO DA CIDADE ---
         const buildings = [];
         const streetlights = [];
 
@@ -129,17 +129,16 @@
             
             const bGroup = new THREE.Group();
 
-            // Estrutura do Prédio
             const bodyGeo = new THREE.BoxGeometry(width, height, depth);
             const bodyMat = new THREE.MeshPhongMaterial({ color: 0x0f1423 });
             const buildingMesh = new THREE.Mesh(bodyGeo, bodyMat);
             buildingMesh.position.y = height / 2;
             bGroup.add(buildingMesh);
 
-            // Janelas Iluminadas (Neon/Luzes da Cidade)
+            // Janelas Iluminadas
             const windowColors = [0xffcc44, 0x00d2ff, 0xff0055, 0xffffff];
             for (let y = 4; y < height - 2; y += 5) {
-                if (Math.random() > 0.2) { // Algumas janelas apagadas
+                if (Math.random() > 0.2) {
                     const winGeo = new THREE.BoxGeometry(width + 0.2, 1.8, depth + 0.2);
                     const winColor = windowColors[Math.floor(Math.random() * windowColors.length)];
                     const winMat = new THREE.MeshBasicMaterial({ color: winColor });
@@ -157,14 +156,12 @@
         function createStreetLight(x, z, side) {
             const group = new THREE.Group();
 
-            // Poste
             const poleGeo = new THREE.CylinderGeometry(0.1, 0.1, 6);
             const poleMat = new THREE.MeshLambertMaterial({ color: 0x666666 });
             const pole = new THREE.Mesh(poleGeo, poleMat);
             pole.position.y = 3;
             group.add(pole);
 
-            // Lâmpada brilhante
             const lightGeo = new THREE.SphereGeometry(0.4, 8, 8);
             const lightMat = new THREE.MeshBasicMaterial({ color: 0xffea88 });
             const lightMesh = new THREE.Mesh(lightGeo, lightMat);
@@ -176,36 +173,162 @@
             streetlights.push(group);
         }
 
-        // Gerando os Prédios e Postes ao longo da pista
         for (let z = -roadLength / 2; z < roadLength / 2; z += 18) {
-            // Prédios Esquerda e Direita
             createBuilding(-18 - Math.random() * 5, z);
             createBuilding(18 + Math.random() * 5, z);
 
-            // Postes de Luz nas Calçadas
             createStreetLight(-8.5, z, 1);
             createStreetLight(8.5, z, -1);
         }
 
-        // --- MODELO DOS CARROS ---
-        function createCarMesh(colorHex, isPlayer = false) {
+        // --- MODELO DO SUPERCARRO DO JOGADOR (BRANCO PEROLADO & TUNADO) ---
+        function createPlayerCarMesh() {
             const carGroup = new THREE.Group();
 
-            // Chassi
+            // Materiais do Carro do Jogador
+            const bodyMat = new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: 120, specular: 0xffffff });
+            const carbonMat = new THREE.MeshPhongMaterial({ color: 0x111111, shininess: 80 });
+            const glassMat = new THREE.MeshPhongMaterial({ color: 0x081018, shininess: 150, transparent: true, opacity: 0.9 });
+            const cyanNeonMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
+
+            // 1. Chassi
+            const baseGeo = new THREE.BoxGeometry(2.1, 0.5, 4.2);
+            const baseMesh = new THREE.Mesh(baseGeo, carbonMat);
+            baseMesh.position.y = 0.35;
+            carGroup.add(baseMesh);
+
+            // 2. Lataria Branca Principal
+            const bodyGeo = new THREE.BoxGeometry(2.0, 0.5, 3.8);
+            const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+            bodyMesh.position.set(0, 0.75, 0.1);
+            carGroup.add(bodyMesh);
+
+            // Bico Aerodinâmico Dianteiro
+            const noseGeo = new THREE.BoxGeometry(1.95, 0.35, 0.8);
+            const noseMesh = new THREE.Mesh(noseGeo, bodyMat);
+            noseMesh.position.set(0, 0.55, -1.9);
+            carGroup.add(noseMesh);
+
+            // Spoilers / Divisor dianteiro (Carbono)
+            const frontSplitter = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.1, 0.4), carbonMat);
+            frontSplitter.position.set(0, 0.25, -2.1);
+            carGroup.add(frontSplitter);
+
+            // 3. Cabine / Vidros
+            const cabinGeo = new THREE.BoxGeometry(1.5, 0.55, 2.0);
+            const cabinMesh = new THREE.Mesh(cabinGeo, glassMat);
+            cabinMesh.position.set(0, 1.2, -0.1);
+            carGroup.add(cabinMesh);
+
+            const roofTop = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.05, 1.4), bodyMat);
+            roofTop.position.set(0, 1.48, -0.1);
+            carGroup.add(roofTop);
+
+            // 4. Listras Duplas Neon Cyan no centro
+            const stripeLeft = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.82, 4.22), cyanNeonMat);
+            stripeLeft.position.set(-0.2, 0.76, 0);
+            carGroup.add(stripeLeft);
+
+            const stripeRight = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.82, 4.22), cyanNeonMat);
+            stripeRight.position.set(0.2, 0.76, 0);
+            carGroup.add(stripeRight);
+
+            // 5. Retrovisores
+            const mirrorGeo = new THREE.BoxGeometry(0.3, 0.15, 0.2);
+            const mirrorL = new THREE.Mesh(mirrorGeo, bodyMat);
+            mirrorL.position.set(-1.15, 1.05, -0.8);
+            const mirrorR = new THREE.Mesh(mirrorGeo, bodyMat);
+            mirrorR.position.set(1.15, 1.05, -0.8);
+            carGroup.add(mirrorL, mirrorR);
+
+            // 6. Aerofólio Traseiro
+            const wingSuppL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.5, 0.2), carbonMat);
+            wingSuppL.position.set(-0.7, 1.1, 1.8);
+            const wingSuppR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.5, 0.2), carbonMat);
+            wingSuppR.position.set(0.7, 1.1, 1.8);
+            carGroup.add(wingSuppL, wingSuppR);
+
+            const wingBlade = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.08, 0.5), carbonMat);
+            wingBlade.position.set(0, 1.35, 1.85);
+            carGroup.add(wingBlade);
+
+            const wingSideL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.3, 0.6), bodyMat);
+            wingSideL.position.set(-1.1, 1.35, 1.85);
+            const wingSideR = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.3, 0.6), bodyMat);
+            wingSideR.position.set(1.1, 1.35, 1.85);
+            carGroup.add(wingSideL, wingSideR);
+
+            // 7. Rodas com Rims Prateados
+            const wheelGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.35, 20);
+            const wheelMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
+            const rimMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.8, roughness: 0.2 });
+            wheelGeo.rotateZ(Math.PI / 2);
+
+            const rimGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.36, 12);
+            rimGeo.rotateZ(Math.PI / 2);
+
+            [[-1.12, 0.42, 1.25], [1.12, 0.42, 1.25], [-1.12, 0.42, -1.25], [1.12, 0.42, -1.25]].forEach(pos => {
+                const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                wheel.position.set(...pos);
+                const rim = new THREE.Mesh(rimGeo, rimMat);
+                rim.position.set(...pos);
+                carGroup.add(wheel, rim);
+            });
+
+            // 8. Faróis LED dianteiros
+            const headLightGeo = new THREE.BoxGeometry(0.45, 0.15, 0.1);
+            const headLightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const headL = new THREE.Mesh(headLightGeo, headLightMat);
+            headL.position.set(-0.65, 0.65, -2.12);
+            const headR = new THREE.Mesh(headLightGeo, headLightMat);
+            headR.position.set(0.65, 0.65, -2.12);
+            carGroup.add(headL, headR);
+
+            // Luz real projetada no asfalto à frente
+            const pLightL = new THREE.PointLight(0x00f0ff, 1.5, 25);
+            pLightL.position.set(-0.65, 0.65, -2.5);
+            carGroup.add(pLightL);
+
+            const pLightR = new THREE.PointLight(0x00f0ff, 1.5, 25);
+            pLightR.position.set(0.65, 0.65, -2.5);
+            carGroup.add(pLightR);
+
+            // Lanternas traseiras
+            const tailLightGeo = new THREE.BoxGeometry(0.6, 0.12, 0.1);
+            const tailLightMat = new THREE.MeshBasicMaterial({ color: 0xff0044 });
+            const tailL = new THREE.Mesh(tailLightGeo, tailLightMat);
+            tailL.position.set(-0.65, 0.7, 2.02);
+            const tailR = new THREE.Mesh(tailLightGeo, tailLightMat);
+            tailR.position.set(0.65, 0.7, 2.02);
+            carGroup.add(tailL, tailR);
+
+            // 9. Neon Underglow (Brilho azul embaixo do carro)
+            const underglowPlaneGeo = new THREE.PlaneGeometry(2.4, 4.4);
+            const underglowMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.45 });
+            const underglowMesh = new THREE.Mesh(underglowPlaneGeo, underglowMat);
+            underglowMesh.rotation.x = -Math.PI / 2;
+            underglowMesh.position.set(0, 0.08, 0);
+            carGroup.add(underglowMesh);
+
+            return carGroup;
+        }
+
+        // --- MODELO DOS CARROS INIMIGOS ---
+        function createEnemyCarMesh(colorHex) {
+            const carGroup = new THREE.Group();
+
             const bodyGeo = new THREE.BoxGeometry(2, 0.8, 4);
-            const bodyMat = new THREE.MeshPhongMaterial({ color: colorHex, shininess: 90 });
+            const bodyMat = new THREE.MeshPhongMaterial({ color: colorHex, shininess: 80 });
             const body = new THREE.Mesh(bodyGeo, bodyMat);
             body.position.y = 0.6;
             carGroup.add(body);
 
-            // Teto/Vidros
             const roofGeo = new THREE.BoxGeometry(1.6, 0.6, 2);
-            const roofMat = new THREE.MeshPhongMaterial({ color: 0x050505, shininess: 100 });
+            const roofMat = new THREE.MeshPhongMaterial({ color: 0x050505 });
             const roof = new THREE.Mesh(roofGeo, roofMat);
             roof.position.set(0, 1.2, -0.2);
             carGroup.add(roof);
 
-            // Rodas
             const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 16);
             const wheelMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
             wheelGeo.rotateZ(Math.PI / 2);
@@ -216,12 +339,10 @@
                 carGroup.add(wheel);
             });
 
-            // Faróis Dianteiros e Traseiros
             const lightGeo = new THREE.BoxGeometry(0.4, 0.2, 0.1);
-            
-            const headL = new THREE.Mesh(lightGeo, new THREE.MeshBasicMaterial({ color: 0xffffff }));
+            const headL = new THREE.Mesh(lightGeo, new THREE.MeshBasicMaterial({ color: 0xffffaa }));
             headL.position.set(-0.6, 0.7, -2.01);
-            const headR = new THREE.Mesh(lightGeo, new THREE.MeshBasicMaterial({ color: 0xffffff }));
+            const headR = new THREE.Mesh(lightGeo, new THREE.MeshBasicMaterial({ color: 0xffffaa }));
             headR.position.set(0.6, 0.7, -2.01);
             carGroup.add(headL, headR);
 
@@ -231,20 +352,11 @@
             tailR.position.set(0.6, 0.7, 2.01);
             carGroup.add(tailL, tailR);
 
-            // Listra Neon no Carro do Jogador
-            if (isPlayer) {
-                const stripeGeo = new THREE.BoxGeometry(0.4, 0.82, 4.02);
-                const stripeMat = new THREE.MeshBasicMaterial({ color: 0x00d2ff });
-                const stripe = new THREE.Mesh(stripeGeo, stripeMat);
-                stripe.position.y = 0.61;
-                carGroup.add(stripe);
-            }
-
             return carGroup;
         }
 
         // Criando Jogador
-        const playerCar = createCarMesh(0x111111, true); // Carro Preto com faixa neon azul
+        const playerCar = createPlayerCarMesh();
         playerCar.position.set(0, 0, 10);
         scene.add(playerCar);
 
@@ -273,7 +385,7 @@
         function spawnObstacle() {
             const enemyColors = [0xcc0000, 0x00aa44, 0xeeaa00, 0x8800cc, 0xff0077];
             const randomColor = enemyColors[Math.floor(Math.random() * enemyColors.length)];
-            const obstacle = createCarMesh(randomColor, false);
+            const obstacle = createEnemyCarMesh(randomColor);
             
             const lanes = [-4.5, -1.5, 1.5, 4.5];
             const laneX = lanes[Math.floor(Math.random() * lanes.length)];
@@ -283,7 +395,7 @@
             obstacles.push(obstacle);
         }
 
-        // Loop Principal de Animação
+        // Loop Principal
         function animate() {
             if (isGameOver) return;
 
@@ -303,7 +415,7 @@
                 playerCar.rotation.z = 0;
             }
 
-            // Mover Faixas, Prédios e Postes (Sensação de Alta Velocidade)
+            // Mover Faixas, Prédios e Postes
             stripes.forEach(s => {
                 s.position.z += speed;
                 if (s.position.z > 30) s.position.z -= roadLength;
@@ -319,22 +431,21 @@
                 if (sl.position.z > 30) sl.position.z -= roadLength;
             });
 
-            // Criar Inimigos no Trânsito
+            // Criar Inimigos
             frameCounter++;
             if (frameCounter % Math.max(25, Math.floor(70 - score / 120)) === 0) {
                 spawnObstacle();
             }
 
-            // Movimentação e Colisão dos Inimigos
+            // Movimentação e Colisão
             for (let i = obstacles.length - 1; i >= 0; i--) {
                 const obs = obstacles[i];
                 obs.position.z += speed;
 
-                // Caixa de Colisão
                 const dx = Math.abs(playerCar.position.x - obs.position.x);
                 const dz = Math.abs(playerCar.position.z - obs.position.z);
 
-                if (dx < 1.8 && dz < 3.2) {
+                if (dx < 1.9 && dz < 3.4) {
                     isGameOver = true;
                     document.getElementById('game-over').style.display = 'block';
                 }
@@ -345,7 +456,7 @@
                 }
             }
 
-            // Pontuação e Aumento de Velocidade
+            // Pontuação e Velocidade
             score += 1;
             speed += 0.00025;
             document.getElementById('score').innerText = Math.floor(score / 10);
