@@ -2,12 +2,12 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Corrida 3D - Trânsito Pesado e Tunado</title>
+    <title>Corrida 3D - Cidade Realista & Neon</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #05050d;
+            background-color: #030308;
             font-family: Arial, sans-serif;
             color: white;
             user-select: none;
@@ -27,7 +27,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(10, 10, 20, 0.92);
+            background: rgba(10, 10, 20, 0.94);
             padding: 40px 60px;
             border: 2px solid #ff0055;
             border-radius: 12px;
@@ -54,15 +54,15 @@
     
     <div id="game-over">
         <h1>BATIDA NO TRÂNSITO! 💥</h1>
-        <p>Você destruiu seu supercarro!</p>
+        <p>Você destruiu seu supercarro na cidade!</p>
         <p>Aperte <b>F5</b> para jogar novamente.</p>
     </div>
 
     <script>
-        // Configuração Inicial da Cena
+        // --- CENA & NÉVOA ---
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x08081a);
-        scene.fog = new THREE.FogExp2(0x08081a, 0.012);
+        scene.background = new THREE.Color(0x050512);
+        scene.fog = new THREE.FogExp2(0x050512, 0.009);
 
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
         
@@ -71,26 +71,42 @@
         renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
-        const ambientLight = new THREE.AmbientLight(0x444466, 0.8);
+        // --- ILUMINAÇÃO AMBIENTE ---
+        const ambientLight = new THREE.AmbientLight(0x555577, 0.9);
         scene.add(ambientLight);
 
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
-        dirLight.position.set(20, 40, 20);
+        const dirLight = new THREE.DirectionalLight(0xaabbff, 0.6);
+        dirLight.position.set(30, 50, 20);
         scene.add(dirLight);
 
-        // Pista e Calçadas
+        // --- CÉU ESTRELADO ---
+        const starGeo = new THREE.BufferGeometry();
+        const starCount = 500;
+        const starPos = new Float32Array(starCount * 3);
+        for(let i = 0; i < starCount * 3; i += 3) {
+            starPos[i] = (Math.random() - 0.5) * 350;
+            starPos[i+1] = 15 + Math.random() * 90;
+            starPos[i+2] = (Math.random() - 0.5) * 350;
+        }
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.7 });
+        const stars = new THREE.Points(starGeo, starMat);
+        scene.add(stars);
+
+        // --- PISTA, CALÇADA & GUARDRAILS ---
         const roadWidth = 14;
-        const roadLength = 250;
+        const roadLength = 300;
 
         const roadGeo = new THREE.PlaneGeometry(roadWidth, roadLength);
-        const roadMat = new THREE.MeshPhongMaterial({ color: 0x1a1a1a, shininess: 30 });
+        const roadMat = new THREE.MeshPhongMaterial({ color: 0x111116, shininess: 40 });
         const road = new THREE.Mesh(roadGeo, roadMat);
         road.rotation.x = -Math.PI / 2;
         scene.add(road);
 
-        const curbWidth = 3;
+        // Calçadas
+        const curbWidth = 2.5;
         const curbGeo = new THREE.PlaneGeometry(curbWidth, roadLength);
-        const curbMat = new THREE.MeshPhongMaterial({ color: 0x444444 });
+        const curbMat = new THREE.MeshPhongMaterial({ color: 0x33333d });
 
         const leftCurb = new THREE.Mesh(curbGeo, curbMat);
         leftCurb.rotation.x = -Math.PI / 2;
@@ -102,6 +118,19 @@
         rightCurb.position.set((roadWidth / 2 + curbWidth / 2), 0.05, 0);
         scene.add(rightCurb);
 
+        // Muretas de Proteção Metálicas (Guardrails)
+        const barrierGeo = new THREE.BoxGeometry(0.3, 0.8, roadLength);
+        const barrierMat = new THREE.MeshStandardMaterial({ color: 0x888899, metalness: 0.8, roughness: 0.2 });
+        
+        const leftBarrier = new THREE.Mesh(barrierGeo, barrierMat);
+        leftBarrier.position.set(-(roadWidth / 2 + 0.2), 0.4, 0);
+        scene.add(leftBarrier);
+
+        const rightBarrier = new THREE.Mesh(barrierGeo, barrierMat);
+        rightBarrier.position.set((roadWidth / 2 + 0.2), 0.4, 0);
+        scene.add(rightBarrier);
+
+        // Faixas Asfálticas
         const stripes = [];
         const stripeGeo = new THREE.PlaneGeometry(0.4, 4);
         const stripeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
@@ -114,26 +143,30 @@
             stripes.push(stripe);
         }
 
-        // --- CONSTRUÇÃO DA CIDADE ---
+        // --- CONSTRUÇÃO DA CIDADE REALISTA ---
         const buildings = [];
         const streetlights = [];
+        const gantries = []; // Pórticos sobre a pista
 
-        function createBuilding(x, z) {
-            const height = 20 + Math.random() * 45;
-            const width = 10 + Math.random() * 6;
-            const depth = 12 + Math.random() * 8;
-            
+        function createBuilding(x, z, isBackground = false) {
             const bGroup = new THREE.Group();
+
+            const height = isBackground ? (45 + Math.random() * 55) : (25 + Math.random() * 45);
+            const width = 11 + Math.random() * 6;
+            const depth = 12 + Math.random() * 8;
+
+            // Corpo Principal
             const bodyGeo = new THREE.BoxGeometry(width, height, depth);
-            const bodyMat = new THREE.MeshPhongMaterial({ color: 0x0f1423 });
+            const bodyMat = new THREE.MeshPhongMaterial({ color: 0x0a0e1a, shininess: 90 });
             const buildingMesh = new THREE.Mesh(bodyGeo, bodyMat);
             buildingMesh.position.y = height / 2;
             bGroup.add(buildingMesh);
 
-            const windowColors = [0xffcc44, 0x00d2ff, 0xff0055, 0xffffff];
-            for (let y = 4; y < height - 2; y += 5) {
-                if (Math.random() > 0.2) {
-                    const winGeo = new THREE.BoxGeometry(width + 0.2, 1.8, depth + 0.2);
+            // Janelas Iluminadas
+            const windowColors = [0xffcc44, 0x00d2ff, 0xff0055, 0x00ff88, 0xffffff];
+            for (let y = 3; y < height - 3; y += 4.5) {
+                if (Math.random() > 0.25) {
+                    const winGeo = new THREE.BoxGeometry(width + 0.15, 1.6, depth + 0.15);
                     const winColor = windowColors[Math.floor(Math.random() * windowColors.length)];
                     const winMat = new THREE.MeshBasicMaterial({ color: winColor });
                     const winMesh = new THREE.Mesh(winGeo, winMat);
@@ -142,23 +175,58 @@
                 }
             }
 
+            // Outdoors Neon (Billboards) nas fachadas
+            if (!isBackground && Math.random() > 0.3) {
+                const neonColors = [0xff0055, 0x00f0ff, 0x00ff66, 0xffaa00];
+                const boardColor = neonColors[Math.floor(Math.random() * neonColors.length)];
+                const boardGeo = new THREE.BoxGeometry(width * 0.7, 3.5, 0.4);
+                const boardMat = new THREE.MeshBasicMaterial({ color: boardColor });
+                const boardMesh = new THREE.Mesh(boardGeo, boardMat);
+                boardMesh.position.set(0, 10 + Math.random() * (height - 18), (depth / 2) + 0.2);
+                bGroup.add(boardMesh);
+            }
+
+            // Acessórios do Topo (Antenas e Sinalizadores)
+            if (Math.random() > 0.4) {
+                // Antena de Rádio
+                const antennaGeo = new THREE.CylinderGeometry(0.1, 0.2, 8);
+                const antennaMat = new THREE.MeshLambertMaterial({ color: 0x666666 });
+                const antenna = new THREE.Mesh(antennaGeo, antennaMat);
+                antenna.position.set(0, height + 4, 0);
+                bGroup.add(antenna);
+
+                // Luz Vermelha no Topo (Aviso de Aviação)
+                const beaconGeo = new THREE.SphereGeometry(0.3, 8, 8);
+                const beaconMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+                const beacon = new THREE.Mesh(beaconGeo, beaconMat);
+                beacon.position.set(0, height + 8, 0);
+                bGroup.add(beacon);
+            }
+
             bGroup.position.set(x, 0, z);
             scene.add(bGroup);
             buildings.push(bGroup);
         }
 
+        // Postes de Iluminação
         function createStreetLight(x, z, side) {
             const group = new THREE.Group();
-            const poleGeo = new THREE.CylinderGeometry(0.1, 0.1, 6);
-            const poleMat = new THREE.MeshLambertMaterial({ color: 0x666666 });
+
+            const poleGeo = new THREE.CylinderGeometry(0.1, 0.12, 6.5);
+            const poleMat = new THREE.MeshStandardMaterial({ color: 0x444455, metalness: 0.8 });
             const pole = new THREE.Mesh(poleGeo, poleMat);
-            pole.position.y = 3;
+            pole.position.y = 3.25;
             group.add(pole);
 
-            const lightGeo = new THREE.SphereGeometry(0.4, 8, 8);
+            const armGeo = new THREE.BoxGeometry(1.5, 0.1, 0.1);
+            const arm = new THREE.Mesh(armGeo, poleMat);
+            arm.position.set(side * 0.75, 6.4, 0);
+            group.add(arm);
+
+            const lightGeo = new THREE.BoxGeometry(0.6, 0.15, 0.4);
             const lightMat = new THREE.MeshBasicMaterial({ color: 0xffea88 });
             const lightMesh = new THREE.Mesh(lightGeo, lightMat);
-            lightMesh.position.set(side * 0.8, 5.8, 0);
+            lightMesh.position.set(side * 1.3, 6.3, 0);
             group.add(lightMesh);
 
             group.position.set(x, 0, z);
@@ -166,14 +234,55 @@
             streetlights.push(group);
         }
 
-        for (let z = -roadLength / 2; z < roadLength / 2; z += 18) {
-            createBuilding(-18 - Math.random() * 5, z);
-            createBuilding(18 + Math.random() * 5, z);
-            createStreetLight(-8.5, z, 1);
-            createStreetLight(8.5, z, -1);
+        // Pórtico Neon Cruzando a Pista (Highway Sign)
+        function createGantry(z) {
+            const group = new THREE.Group();
+            const frameMat = new THREE.MeshStandardMaterial({ color: 0x222233, metalness: 0.7 });
+
+            // Pilares Laterais
+            const pilarL = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 8), frameMat);
+            pilarL.position.set(-8.5, 4, 0);
+            const pilarR = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 8), frameMat);
+            pilarR.position.set(8.5, 4, 0);
+            group.add(pilarL, pilarR);
+
+            // Viga Superior
+            const beam = new THREE.Mesh(new THREE.BoxGeometry(17.5, 0.4, 0.4), frameMat);
+            beam.position.set(0, 7.8, 0);
+            group.add(beam);
+
+            // Placa Neon
+            const signGeo = new THREE.BoxGeometry(8, 2, 0.2);
+            const signMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
+            const sign = new THREE.Mesh(signGeo, signMat);
+            sign.position.set(0, 7.8, 0);
+            group.add(sign);
+
+            group.position.set(0, 0, z);
+            scene.add(group);
+            gantries.push(group);
         }
 
-        // --- MODELO DO SUPERCARRO DO JOGADOR (BRANCO PEROLADO) ---
+        // Gerar Prédios (Camada Próxima e de Fundo)
+        for (let z = -roadLength / 2; z < roadLength / 2; z += 20) {
+            // Frente
+            createBuilding(-17 - Math.random() * 4, z);
+            createBuilding(17 + Math.random() * 4, z);
+
+            // Fundo (Horizonte)
+            createBuilding(-32 - Math.random() * 8, z + 10, true);
+            createBuilding(32 + Math.random() * 8, z + 10, true);
+
+            // Postes
+            createStreetLight(-8, z, 1);
+            createStreetLight(8, z, -1);
+        }
+
+        // Adicionar Pórticos a cada 90 metros
+        createGantry(-80);
+        createGantry(-170);
+
+        // --- JOGADOR ---
         function createPlayerCarMesh() {
             const carGroup = new THREE.Group();
 
@@ -216,15 +325,15 @@
                 carGroup.add(wheel);
             });
 
-            // Faróis Projetando Luz
-            const pLightL = new THREE.PointLight(0x00f0ff, 1.5, 25);
+            // Faróis Iluminando a Pista
+            const pLightL = new THREE.PointLight(0x00f0ff, 1.8, 30);
             pLightL.position.set(-0.65, 0.65, -2.5);
             carGroup.add(pLightL);
-            const pLightR = new THREE.PointLight(0x00f0ff, 1.5, 25);
+            const pLightR = new THREE.PointLight(0x00f0ff, 1.8, 30);
             pLightR.position.set(0.65, 0.65, -2.5);
             carGroup.add(pLightR);
 
-            // Neon Underglow do Jogador
+            // Neon Embaixo
             const underglowPlaneGeo = new THREE.PlaneGeometry(2.4, 4.4);
             const underglowMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.5 });
             const underglowMesh = new THREE.Mesh(underglowPlaneGeo, underglowMat);
@@ -235,25 +344,20 @@
             return carGroup;
         }
 
-        // --- MODELOS INIMIGOS 100% NOVOS ---
-
-        // Inimigo 1: Caminhonete / SUV (Gigante e Alta)
+        // --- MODELOS INIMIGOS ---
         function createSUV(colorHex) {
             const carGroup = new THREE.Group();
             const bodyMat = new THREE.MeshPhongMaterial({ color: colorHex, shininess: 50 });
             const glassMat = new THREE.MeshPhongMaterial({ color: 0x050505, shininess: 100 });
 
-            // Carroceria Grande (Pickup)
             const bodyMesh = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.0, 4.8), bodyMat);
             bodyMesh.position.set(0, 0.9, 0);
             carGroup.add(bodyMesh);
 
-            // Cabine Alta
             const cabinMesh = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.8, 2.4), glassMat);
             cabinMesh.position.set(0, 1.8, -0.4);
             carGroup.add(cabinMesh);
 
-            // Rodas Gigantes
             const wheelGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.5, 16);
             const wheelMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
             wheelGeo.rotateZ(Math.PI / 2);
@@ -264,23 +368,19 @@
                 carGroup.add(wheel);
             });
 
-            // Lanternas Traseiras
             const tailLight = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.3, 0.1), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
             tailLight.position.set(0, 1.0, 2.41);
             carGroup.add(tailLight);
 
-            // Hitbox maior para SUV
             carGroup.userData = { hitWidth: 2.4, hitLength: 4.8 };
             return carGroup;
         }
 
-        // Inimigo 2: Corredor Tunado (Bem baixo e com Neon vibrante)
         function createTunedEnemy(colorHex, neonHex) {
             const carGroup = new THREE.Group();
             const bodyMat = new THREE.MeshPhongMaterial({ color: colorHex, shininess: 150 });
             const glassMat = new THREE.MeshPhongMaterial({ color: 0x050505, shininess: 100 });
 
-            // Chassi Super Baixo
             const bodyMesh = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.4, 4.0), bodyMat);
             bodyMesh.position.set(0, 0.5, 0);
             carGroup.add(bodyMesh);
@@ -289,12 +389,10 @@
             cabinMesh.position.set(0, 0.9, -0.2);
             carGroup.add(cabinMesh);
 
-            // Aerofólio Gigante Traseiro
             const wingBlade = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.1, 0.6), new THREE.MeshPhongMaterial({ color: 0x111111 }));
             wingBlade.position.set(0, 1.0, 1.8);
             carGroup.add(wingBlade);
 
-            // Rodas Esportivas
             const wheelGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.4, 16);
             const wheelMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
             wheelGeo.rotateZ(Math.PI / 2);
@@ -305,21 +403,18 @@
                 carGroup.add(wheel);
             });
 
-            // Luz Neon Underglow no Asfalto (Marca Registrada dos Tunados)
             const underglowPlaneGeo = new THREE.PlaneGeometry(2.6, 4.4);
             const underglowMat = new THREE.MeshBasicMaterial({ color: neonHex, transparent: true, opacity: 0.7 });
             const underglowMesh = new THREE.Mesh(underglowPlaneGeo, underglowMat);
             underglowMesh.rotation.x = -Math.PI / 2;
-            underglowMesh.position.set(0, 0.05, 0); // Bem rente ao chão
+            underglowMesh.position.set(0, 0.05, 0);
             carGroup.add(underglowMesh);
 
-            // Hitbox normal
             carGroup.userData = { hitWidth: 2.1, hitLength: 4.0 };
             return carGroup;
         }
 
-
-        // Inicializando o Jogador
+        // Instanciando Jogador
         const playerCar = createPlayerCarMesh();
         playerCar.position.set(0, 0, 10);
         scene.add(playerCar);
@@ -338,15 +433,14 @@
             if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
         });
 
-        // Lógica de Trânsito
+        // Loop de Jogo
         let obstacles = [];
         let score = 0;
-        let speed = 0.9;
+        let speed = 0.95;
         let isGameOver = false;
         let frameCounter = 0;
 
         function spawnObstacle() {
-            // Sorteia se vai ser SUV ou Tunado
             const isSUV = Math.random() > 0.5;
             let obstacle;
 
@@ -356,10 +450,10 @@
                 obstacle = createSUV(color);
             } else {
                 const tunedColors = [
-                    { body: 0x111111, neon: 0x00ff00 }, // Preto com neon verde
-                    { body: 0xff0055, neon: 0xff00aa }, // Rosa com neon rosa
-                    { body: 0x3300aa, neon: 0x9900ff }, // Roxo com neon roxo
-                    { body: 0xeeaa00, neon: 0xff3300 }  // Amarelo com neon laranja
+                    { body: 0x111111, neon: 0x00ff00 },
+                    { body: 0xff0055, neon: 0xff00aa },
+                    { body: 0x3300aa, neon: 0x9900ff },
+                    { body: 0xeeaa00, neon: 0xff3300 }
                 ];
                 const style = tunedColors[Math.floor(Math.random() * tunedColors.length)];
                 obstacle = createTunedEnemy(style.body, style.neon);
@@ -368,17 +462,17 @@
             const lanes = [-4.5, -1.5, 1.5, 4.5];
             const laneX = lanes[Math.floor(Math.random() * lanes.length)];
             
-            obstacle.position.set(laneX, 0, -100);
+            obstacle.position.set(laneX, 0, -110);
             scene.add(obstacle);
             obstacles.push(obstacle);
         }
 
-        // Loop de Animação
+        // Animação Principal
         function animate() {
             if (isGameOver) return;
             requestAnimationFrame(animate);
 
-            // Dirigindo o jogador
+            // Direção do Jogador
             const steerSpeed = 0.28;
             const maxBound = (roadWidth / 2) - 1.5;
 
@@ -392,24 +486,25 @@
                 playerCar.rotation.z = 0;
             }
 
-            // Sensação de Velocidade
+            // Movimento Infinito do Cenário (Cidade em Movimento)
             stripes.forEach(s => { s.position.z += speed; if (s.position.z > 30) s.position.z -= roadLength; });
             buildings.forEach(b => { b.position.z += speed; if (b.position.z > 30) b.position.z -= roadLength; });
             streetlights.forEach(sl => { sl.position.z += speed; if (sl.position.z > 30) sl.position.z -= roadLength; });
+            gantries.forEach(g => { g.position.z += speed; if (g.position.z > 30) g.position.z -= roadLength; });
 
-            // Inimigos
+            // Spawn Obstáculos
             frameCounter++;
-            if (frameCounter % Math.max(25, Math.floor(70 - score / 120)) === 0) {
+            if (frameCounter % Math.max(22, Math.floor(65 - score / 120)) === 0) {
                 spawnObstacle();
             }
 
+            // Checagem de Colisão
             for (let i = obstacles.length - 1; i >= 0; i--) {
                 const obs = obstacles[i];
                 obs.position.z += speed;
 
-                // Colisão dinâmica baseada no tamanho do inimigo (SUV é maior)
-                const hitW = (obs.userData.hitWidth / 2) + 1.0;
-                const hitL = (obs.userData.hitLength / 2) + 1.9;
+                const hitW = (obs.userData.hitWidth / 2) + 0.95;
+                const hitL = (obs.userData.hitLength / 2) + 1.85;
 
                 const dx = Math.abs(playerCar.position.x - obs.position.x);
                 const dz = Math.abs(playerCar.position.z - obs.position.z);
@@ -425,7 +520,7 @@
                 }
             }
 
-            // Pontos e Dificuldade
+            // Pontuação e Velocidade
             score += 1;
             speed += 0.00025;
             document.getElementById('score').innerText = Math.floor(score / 10);
