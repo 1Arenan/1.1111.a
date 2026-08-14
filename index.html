@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Corrida 3D - Cidade Noturna & Supercarro Branco</title>
+    <title>Corrida 3D - Trânsito Tunado</title>
     <style>
         body {
             margin: 0;
@@ -61,8 +61,8 @@
     <script>
         // Configuração Inicial da Cena 3D
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x08081a); // Céu noturno
-        scene.fog = new THREE.FogExp2(0x08081a, 0.012); // Névoa noturna de fundo
+        scene.background = new THREE.Color(0x08081a);
+        scene.fog = new THREE.FogExp2(0x08081a, 0.012);
 
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
         
@@ -71,7 +71,7 @@
         renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
-        // Luzes Ambientais da Cidade
+        // Luzes Ambientais
         const ambientLight = new THREE.AmbientLight(0x444466, 0.8);
         scene.add(ambientLight);
 
@@ -79,18 +79,16 @@
         dirLight.position.set(20, 40, 20);
         scene.add(dirLight);
 
-        // Dimensões da Pista
+        // Pista e Calçadas
         const roadWidth = 14;
         const roadLength = 250;
 
-        // Asfalto principal
         const roadGeo = new THREE.PlaneGeometry(roadWidth, roadLength);
         const roadMat = new THREE.MeshPhongMaterial({ color: 0x1a1a1a, shininess: 30 });
         const road = new THREE.Mesh(roadGeo, roadMat);
         road.rotation.x = -Math.PI / 2;
         scene.add(road);
 
-        // Calçadas nas laterais
         const curbWidth = 3;
         const curbGeo = new THREE.PlaneGeometry(curbWidth, roadLength);
         const curbMat = new THREE.MeshPhongMaterial({ color: 0x444444 });
@@ -105,7 +103,7 @@
         rightCurb.position.set((roadWidth / 2 + curbWidth / 2), 0.05, 0);
         scene.add(rightCurb);
 
-        // Faixas pontilhadas da pista
+        // Faixas pontilhadas
         const stripes = [];
         const stripeGeo = new THREE.PlaneGeometry(0.4, 4);
         const stripeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
@@ -135,7 +133,6 @@
             buildingMesh.position.y = height / 2;
             bGroup.add(buildingMesh);
 
-            // Janelas Iluminadas
             const windowColors = [0xffcc44, 0x00d2ff, 0xff0055, 0xffffff];
             for (let y = 4; y < height - 2; y += 5) {
                 if (Math.random() > 0.2) {
@@ -181,40 +178,34 @@
             createStreetLight(8.5, z, -1);
         }
 
-        // --- MODELO DO SUPERCARRO DO JOGADOR (BRANCO PEROLADO & TUNADO) ---
+        // --- MODELO DO SUPERCARRO DO JOGADOR ---
         function createPlayerCarMesh() {
             const carGroup = new THREE.Group();
 
-            // Materiais do Carro do Jogador
             const bodyMat = new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: 120, specular: 0xffffff });
             const carbonMat = new THREE.MeshPhongMaterial({ color: 0x111111, shininess: 80 });
             const glassMat = new THREE.MeshPhongMaterial({ color: 0x081018, shininess: 150, transparent: true, opacity: 0.9 });
             const cyanNeonMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
 
-            // 1. Chassi
             const baseGeo = new THREE.BoxGeometry(2.1, 0.5, 4.2);
             const baseMesh = new THREE.Mesh(baseGeo, carbonMat);
             baseMesh.position.y = 0.35;
             carGroup.add(baseMesh);
 
-            // 2. Lataria Branca Principal
             const bodyGeo = new THREE.BoxGeometry(2.0, 0.5, 3.8);
             const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
             bodyMesh.position.set(0, 0.75, 0.1);
             carGroup.add(bodyMesh);
 
-            // Bico Aerodinâmico Dianteiro
             const noseGeo = new THREE.BoxGeometry(1.95, 0.35, 0.8);
             const noseMesh = new THREE.Mesh(noseGeo, bodyMat);
             noseMesh.position.set(0, 0.55, -1.9);
             carGroup.add(noseMesh);
 
-            // Spoilers / Divisor dianteiro (Carbono)
             const frontSplitter = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.1, 0.4), carbonMat);
             frontSplitter.position.set(0, 0.25, -2.1);
             carGroup.add(frontSplitter);
 
-            // 3. Cabine / Vidros
             const cabinGeo = new THREE.BoxGeometry(1.5, 0.55, 2.0);
             const cabinMesh = new THREE.Mesh(cabinGeo, glassMat);
             cabinMesh.position.set(0, 1.2, -0.1);
@@ -224,7 +215,6 @@
             roofTop.position.set(0, 1.48, -0.1);
             carGroup.add(roofTop);
 
-            // 4. Listras Duplas Neon Cyan no centro
             const stripeLeft = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.82, 4.22), cyanNeonMat);
             stripeLeft.position.set(-0.2, 0.76, 0);
             carGroup.add(stripeLeft);
@@ -233,7 +223,6 @@
             stripeRight.position.set(0.2, 0.76, 0);
             carGroup.add(stripeRight);
 
-            // 5. Retrovisores
             const mirrorGeo = new THREE.BoxGeometry(0.3, 0.15, 0.2);
             const mirrorL = new THREE.Mesh(mirrorGeo, bodyMat);
             mirrorL.position.set(-1.15, 1.05, -0.8);
@@ -241,7 +230,6 @@
             mirrorR.position.set(1.15, 1.05, -0.8);
             carGroup.add(mirrorL, mirrorR);
 
-            // 6. Aerofólio Traseiro
             const wingSuppL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.5, 0.2), carbonMat);
             wingSuppL.position.set(-0.7, 1.1, 1.8);
             const wingSuppR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.5, 0.2), carbonMat);
@@ -258,7 +246,6 @@
             wingSideR.position.set(1.1, 1.35, 1.85);
             carGroup.add(wingSideL, wingSideR);
 
-            // 7. Rodas com Rims Prateados
             const wheelGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.35, 20);
             const wheelMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
             const rimMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.8, roughness: 0.2 });
@@ -275,7 +262,6 @@
                 carGroup.add(wheel, rim);
             });
 
-            // 8. Faróis LED dianteiros
             const headLightGeo = new THREE.BoxGeometry(0.45, 0.15, 0.1);
             const headLightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
             const headL = new THREE.Mesh(headLightGeo, headLightMat);
@@ -284,7 +270,6 @@
             headR.position.set(0.65, 0.65, -2.12);
             carGroup.add(headL, headR);
 
-            // Luz real projetada no asfalto à frente
             const pLightL = new THREE.PointLight(0x00f0ff, 1.5, 25);
             pLightL.position.set(-0.65, 0.65, -2.5);
             carGroup.add(pLightL);
@@ -293,7 +278,6 @@
             pLightR.position.set(0.65, 0.65, -2.5);
             carGroup.add(pLightR);
 
-            // Lanternas traseiras
             const tailLightGeo = new THREE.BoxGeometry(0.6, 0.12, 0.1);
             const tailLightMat = new THREE.MeshBasicMaterial({ color: 0xff0044 });
             const tailL = new THREE.Mesh(tailLightGeo, tailLightMat);
@@ -302,7 +286,6 @@
             tailR.position.set(0.65, 0.7, 2.02);
             carGroup.add(tailL, tailR);
 
-            // 9. Neon Underglow (Brilho azul embaixo do carro)
             const underglowPlaneGeo = new THREE.PlaneGeometry(2.4, 4.4);
             const underglowMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.45 });
             const underglowMesh = new THREE.Mesh(underglowPlaneGeo, underglowMat);
@@ -313,43 +296,74 @@
             return carGroup;
         }
 
-        // --- MODELO DOS CARROS INIMIGOS ---
+        // --- MODELO DOS CARROS INIMIGOS (AGORA TUNADOS) ---
         function createEnemyCarMesh(colorHex) {
             const carGroup = new THREE.Group();
 
-            const bodyGeo = new THREE.BoxGeometry(2, 0.8, 4);
-            const bodyMat = new THREE.MeshPhongMaterial({ color: colorHex, shininess: 80 });
-            const body = new THREE.Mesh(bodyGeo, bodyMat);
-            body.position.y = 0.6;
-            carGroup.add(body);
+            // Materiais
+            const bodyMat = new THREE.MeshPhongMaterial({ color: colorHex, shininess: 100 });
+            const carbonMat = new THREE.MeshPhongMaterial({ color: 0x111111, shininess: 80 });
+            const glassMat = new THREE.MeshPhongMaterial({ color: 0x081018, shininess: 150 });
 
-            const roofGeo = new THREE.BoxGeometry(1.6, 0.6, 2);
-            const roofMat = new THREE.MeshPhongMaterial({ color: 0x050505 });
-            const roof = new THREE.Mesh(roofGeo, roofMat);
-            roof.position.set(0, 1.2, -0.2);
-            carGroup.add(roof);
+            // Chassi principal (mais esportivo)
+            const bodyGeo = new THREE.BoxGeometry(2.0, 0.5, 3.8);
+            const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+            bodyMesh.position.set(0, 0.75, 0);
+            carGroup.add(bodyMesh);
 
+            // Cabine (Vidros escuros)
+            const cabinGeo = new THREE.BoxGeometry(1.5, 0.5, 1.8);
+            const cabinMesh = new THREE.Mesh(cabinGeo, glassMat);
+            cabinMesh.position.set(0, 1.15, -0.2);
+            carGroup.add(cabinMesh);
+
+            // Teto (Mesma cor do carro)
+            const roofGeo = new THREE.BoxGeometry(1.3, 0.05, 1.2);
+            const roofMesh = new THREE.Mesh(roofGeo, bodyMat);
+            roofMesh.position.set(0, 1.4, -0.2);
+            carGroup.add(roofMesh);
+
+            // Aerofólio esportivo traseiro
+            const wingSupp = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.3, 0.1), carbonMat);
+            wingSupp.position.set(0, 1.05, 1.7);
+            carGroup.add(wingSupp);
+            
+            const wingBlade = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.08, 0.4), bodyMat);
+            wingBlade.position.set(0, 1.2, 1.75);
+            carGroup.add(wingBlade);
+
+            // Rodas e Calotas (Liga Leve)
             const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 16);
             const wheelMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
+            const rimMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, metalness: 0.6, roughness: 0.3 });
             wheelGeo.rotateZ(Math.PI / 2);
+            
+            const rimGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.32, 10);
+            rimGeo.rotateZ(Math.PI / 2);
 
             [[-1.1, 0.4, 1.2], [1.1, 0.4, 1.2], [-1.1, 0.4, -1.2], [1.1, 0.4, -1.2]].forEach(pos => {
                 const wheel = new THREE.Mesh(wheelGeo, wheelMat);
                 wheel.position.set(...pos);
-                carGroup.add(wheel);
+                const rim = new THREE.Mesh(rimGeo, rimMat);
+                rim.position.set(...pos);
+                carGroup.add(wheel, rim);
             });
 
-            const lightGeo = new THREE.BoxGeometry(0.4, 0.2, 0.1);
-            const headL = new THREE.Mesh(lightGeo, new THREE.MeshBasicMaterial({ color: 0xffffaa }));
-            headL.position.set(-0.6, 0.7, -2.01);
-            const headR = new THREE.Mesh(lightGeo, new THREE.MeshBasicMaterial({ color: 0xffffaa }));
-            headR.position.set(0.6, 0.7, -2.01);
+            // Faróis e Lanternas
+            const lightGeo = new THREE.BoxGeometry(0.4, 0.15, 0.1);
+            
+            // Farol dianteiro (Xenon/Amarelo brilhante)
+            const headL = new THREE.Mesh(lightGeo, new THREE.MeshBasicMaterial({ color: 0xffeebb }));
+            headL.position.set(-0.6, 0.75, -1.91);
+            const headR = new THREE.Mesh(lightGeo, new THREE.MeshBasicMaterial({ color: 0xffeebb }));
+            headR.position.set(0.6, 0.75, -1.91);
             carGroup.add(headL, headR);
 
-            const tailL = new THREE.Mesh(lightGeo, new THREE.MeshBasicMaterial({ color: 0xff0033 }));
-            tailL.position.set(-0.6, 0.7, 2.01);
-            const tailR = new THREE.Mesh(lightGeo, new THREE.MeshBasicMaterial({ color: 0xff0033 }));
-            tailR.position.set(0.6, 0.7, 2.01);
+            // Lanterna Traseira (Vermelho Vivo)
+            const tailL = new THREE.Mesh(lightGeo, new THREE.MeshBasicMaterial({ color: 0xff0022 }));
+            tailL.position.set(-0.6, 0.75, 1.91);
+            const tailR = new THREE.Mesh(lightGeo, new THREE.MeshBasicMaterial({ color: 0xff0022 }));
+            tailR.position.set(0.6, 0.75, 1.91);
             carGroup.add(tailL, tailR);
 
             return carGroup;
@@ -383,7 +397,8 @@
         let frameCounter = 0;
 
         function spawnObstacle() {
-            const enemyColors = [0xcc0000, 0x00aa44, 0xeeaa00, 0x8800cc, 0xff0077];
+            // Cores mais legais para os carros inimigos
+            const enemyColors = [0xcc0000, 0x00cc44, 0xffaa00, 0x7700cc, 0xff0077, 0x0055ff];
             const randomColor = enemyColors[Math.floor(Math.random() * enemyColors.length)];
             const obstacle = createEnemyCarMesh(randomColor);
             
