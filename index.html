@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Corrida 3D - Trânsito Tunado</title>
+    <title>Corrida 3D - Trânsito Pesado e Tunado</title>
     <style>
         body {
             margin: 0;
@@ -54,12 +54,12 @@
     
     <div id="game-over">
         <h1>BATIDA NO TRÂNSITO! 💥</h1>
-        <p>Você bateu seu supercarro!</p>
+        <p>Você destruiu seu supercarro!</p>
         <p>Aperte <b>F5</b> para jogar novamente.</p>
     </div>
 
     <script>
-        // Configuração Inicial da Cena 3D
+        // Configuração Inicial da Cena
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x08081a);
         scene.fog = new THREE.FogExp2(0x08081a, 0.012);
@@ -71,7 +71,6 @@
         renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
-        // Luzes Ambientais
         const ambientLight = new THREE.AmbientLight(0x444466, 0.8);
         scene.add(ambientLight);
 
@@ -103,7 +102,6 @@
         rightCurb.position.set((roadWidth / 2 + curbWidth / 2), 0.05, 0);
         scene.add(rightCurb);
 
-        // Faixas pontilhadas
         const stripes = [];
         const stripeGeo = new THREE.PlaneGeometry(0.4, 4);
         const stripeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
@@ -126,7 +124,6 @@
             const depth = 12 + Math.random() * 8;
             
             const bGroup = new THREE.Group();
-
             const bodyGeo = new THREE.BoxGeometry(width, height, depth);
             const bodyMat = new THREE.MeshPhongMaterial({ color: 0x0f1423 });
             const buildingMesh = new THREE.Mesh(bodyGeo, bodyMat);
@@ -152,7 +149,6 @@
 
         function createStreetLight(x, z, side) {
             const group = new THREE.Group();
-
             const poleGeo = new THREE.CylinderGeometry(0.1, 0.1, 6);
             const poleMat = new THREE.MeshLambertMaterial({ color: 0x666666 });
             const pole = new THREE.Mesh(poleGeo, poleMat);
@@ -173,47 +169,30 @@
         for (let z = -roadLength / 2; z < roadLength / 2; z += 18) {
             createBuilding(-18 - Math.random() * 5, z);
             createBuilding(18 + Math.random() * 5, z);
-
             createStreetLight(-8.5, z, 1);
             createStreetLight(8.5, z, -1);
         }
 
-        // --- MODELO DO SUPERCARRO DO JOGADOR ---
+        // --- MODELO DO SUPERCARRO DO JOGADOR (BRANCO PEROLADO) ---
         function createPlayerCarMesh() {
             const carGroup = new THREE.Group();
 
-            const bodyMat = new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: 120, specular: 0xffffff });
+            const bodyMat = new THREE.MeshPhongMaterial({ color: 0xffffff, shininess: 120 });
             const carbonMat = new THREE.MeshPhongMaterial({ color: 0x111111, shininess: 80 });
-            const glassMat = new THREE.MeshPhongMaterial({ color: 0x081018, shininess: 150, transparent: true, opacity: 0.9 });
+            const glassMat = new THREE.MeshPhongMaterial({ color: 0x081018, shininess: 150 });
             const cyanNeonMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
 
-            const baseGeo = new THREE.BoxGeometry(2.1, 0.5, 4.2);
-            const baseMesh = new THREE.Mesh(baseGeo, carbonMat);
+            const baseMesh = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.5, 4.2), carbonMat);
             baseMesh.position.y = 0.35;
             carGroup.add(baseMesh);
 
-            const bodyGeo = new THREE.BoxGeometry(2.0, 0.5, 3.8);
-            const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+            const bodyMesh = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.5, 3.8), bodyMat);
             bodyMesh.position.set(0, 0.75, 0.1);
             carGroup.add(bodyMesh);
 
-            const noseGeo = new THREE.BoxGeometry(1.95, 0.35, 0.8);
-            const noseMesh = new THREE.Mesh(noseGeo, bodyMat);
-            noseMesh.position.set(0, 0.55, -1.9);
-            carGroup.add(noseMesh);
-
-            const frontSplitter = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.1, 0.4), carbonMat);
-            frontSplitter.position.set(0, 0.25, -2.1);
-            carGroup.add(frontSplitter);
-
-            const cabinGeo = new THREE.BoxGeometry(1.5, 0.55, 2.0);
-            const cabinMesh = new THREE.Mesh(cabinGeo, glassMat);
+            const cabinMesh = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.55, 2.0), glassMat);
             cabinMesh.position.set(0, 1.2, -0.1);
             carGroup.add(cabinMesh);
-
-            const roofTop = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.05, 1.4), bodyMat);
-            roofTop.position.set(0, 1.48, -0.1);
-            carGroup.add(roofTop);
 
             const stripeLeft = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.82, 4.22), cyanNeonMat);
             stripeLeft.position.set(-0.2, 0.76, 0);
@@ -223,71 +202,31 @@
             stripeRight.position.set(0.2, 0.76, 0);
             carGroup.add(stripeRight);
 
-            const mirrorGeo = new THREE.BoxGeometry(0.3, 0.15, 0.2);
-            const mirrorL = new THREE.Mesh(mirrorGeo, bodyMat);
-            mirrorL.position.set(-1.15, 1.05, -0.8);
-            const mirrorR = new THREE.Mesh(mirrorGeo, bodyMat);
-            mirrorR.position.set(1.15, 1.05, -0.8);
-            carGroup.add(mirrorL, mirrorR);
-
-            const wingSuppL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.5, 0.2), carbonMat);
-            wingSuppL.position.set(-0.7, 1.1, 1.8);
-            const wingSuppR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.5, 0.2), carbonMat);
-            wingSuppR.position.set(0.7, 1.1, 1.8);
-            carGroup.add(wingSuppL, wingSuppR);
-
             const wingBlade = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.08, 0.5), carbonMat);
             wingBlade.position.set(0, 1.35, 1.85);
             carGroup.add(wingBlade);
 
-            const wingSideL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.3, 0.6), bodyMat);
-            wingSideL.position.set(-1.1, 1.35, 1.85);
-            const wingSideR = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.3, 0.6), bodyMat);
-            wingSideR.position.set(1.1, 1.35, 1.85);
-            carGroup.add(wingSideL, wingSideR);
-
             const wheelGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.35, 20);
             const wheelMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
-            const rimMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.8, roughness: 0.2 });
             wheelGeo.rotateZ(Math.PI / 2);
-
-            const rimGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.36, 12);
-            rimGeo.rotateZ(Math.PI / 2);
 
             [[-1.12, 0.42, 1.25], [1.12, 0.42, 1.25], [-1.12, 0.42, -1.25], [1.12, 0.42, -1.25]].forEach(pos => {
                 const wheel = new THREE.Mesh(wheelGeo, wheelMat);
                 wheel.position.set(...pos);
-                const rim = new THREE.Mesh(rimGeo, rimMat);
-                rim.position.set(...pos);
-                carGroup.add(wheel, rim);
+                carGroup.add(wheel);
             });
 
-            const headLightGeo = new THREE.BoxGeometry(0.45, 0.15, 0.1);
-            const headLightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-            const headL = new THREE.Mesh(headLightGeo, headLightMat);
-            headL.position.set(-0.65, 0.65, -2.12);
-            const headR = new THREE.Mesh(headLightGeo, headLightMat);
-            headR.position.set(0.65, 0.65, -2.12);
-            carGroup.add(headL, headR);
-
+            // Faróis Projetando Luz
             const pLightL = new THREE.PointLight(0x00f0ff, 1.5, 25);
             pLightL.position.set(-0.65, 0.65, -2.5);
             carGroup.add(pLightL);
-
             const pLightR = new THREE.PointLight(0x00f0ff, 1.5, 25);
             pLightR.position.set(0.65, 0.65, -2.5);
             carGroup.add(pLightR);
 
-            const tailLightGeo = new THREE.BoxGeometry(0.6, 0.12, 0.1);
-            const tailLightMat = new THREE.MeshBasicMaterial({ color: 0xff0044 });
-            const tailL = new THREE.Mesh(tailLightGeo, tailLightMat);
-            tailL.position.set(-0.65, 0.7, 2.02);
-            const tailR = new THREE.Mesh(tailLightGeo, tailLightMat);
-            tailR.position.set(0.65, 0.7, 2.02);
-            carGroup.add(tailL, tailR);
-
+            // Neon Underglow do Jogador
             const underglowPlaneGeo = new THREE.PlaneGeometry(2.4, 4.4);
-            const underglowMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.45 });
+            const underglowMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.5 });
             const underglowMesh = new THREE.Mesh(underglowPlaneGeo, underglowMat);
             underglowMesh.rotation.x = -Math.PI / 2;
             underglowMesh.position.set(0, 0.08, 0);
@@ -296,85 +235,95 @@
             return carGroup;
         }
 
-        // --- MODELO DOS CARROS INIMIGOS (AGORA TUNADOS) ---
-        function createEnemyCarMesh(colorHex) {
+        // --- MODELOS INIMIGOS 100% NOVOS ---
+
+        // Inimigo 1: Caminhonete / SUV (Gigante e Alta)
+        function createSUV(colorHex) {
             const carGroup = new THREE.Group();
+            const bodyMat = new THREE.MeshPhongMaterial({ color: colorHex, shininess: 50 });
+            const glassMat = new THREE.MeshPhongMaterial({ color: 0x050505, shininess: 100 });
 
-            // Materiais
-            const bodyMat = new THREE.MeshPhongMaterial({ color: colorHex, shininess: 100 });
-            const carbonMat = new THREE.MeshPhongMaterial({ color: 0x111111, shininess: 80 });
-            const glassMat = new THREE.MeshPhongMaterial({ color: 0x081018, shininess: 150 });
-
-            // Chassi principal (mais esportivo)
-            const bodyGeo = new THREE.BoxGeometry(2.0, 0.5, 3.8);
-            const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
-            bodyMesh.position.set(0, 0.75, 0);
+            // Carroceria Grande (Pickup)
+            const bodyMesh = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.0, 4.8), bodyMat);
+            bodyMesh.position.set(0, 0.9, 0);
             carGroup.add(bodyMesh);
 
-            // Cabine (Vidros escuros)
-            const cabinGeo = new THREE.BoxGeometry(1.5, 0.5, 1.8);
-            const cabinMesh = new THREE.Mesh(cabinGeo, glassMat);
-            cabinMesh.position.set(0, 1.15, -0.2);
+            // Cabine Alta
+            const cabinMesh = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.8, 2.4), glassMat);
+            cabinMesh.position.set(0, 1.8, -0.4);
             carGroup.add(cabinMesh);
 
-            // Teto (Mesma cor do carro)
-            const roofGeo = new THREE.BoxGeometry(1.3, 0.05, 1.2);
-            const roofMesh = new THREE.Mesh(roofGeo, bodyMat);
-            roofMesh.position.set(0, 1.4, -0.2);
-            carGroup.add(roofMesh);
-
-            // Aerofólio esportivo traseiro
-            const wingSupp = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.3, 0.1), carbonMat);
-            wingSupp.position.set(0, 1.05, 1.7);
-            carGroup.add(wingSupp);
-            
-            const wingBlade = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.08, 0.4), bodyMat);
-            wingBlade.position.set(0, 1.2, 1.75);
-            carGroup.add(wingBlade);
-
-            // Rodas e Calotas (Liga Leve)
-            const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 16);
+            // Rodas Gigantes
+            const wheelGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.5, 16);
             const wheelMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
-            const rimMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, metalness: 0.6, roughness: 0.3 });
             wheelGeo.rotateZ(Math.PI / 2);
-            
-            const rimGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.32, 10);
-            rimGeo.rotateZ(Math.PI / 2);
 
-            [[-1.1, 0.4, 1.2], [1.1, 0.4, 1.2], [-1.1, 0.4, -1.2], [1.1, 0.4, -1.2]].forEach(pos => {
+            [[-1.3, 0.6, 1.5], [1.3, 0.6, 1.5], [-1.3, 0.6, -1.5], [1.3, 0.6, -1.5]].forEach(pos => {
                 const wheel = new THREE.Mesh(wheelGeo, wheelMat);
                 wheel.position.set(...pos);
-                const rim = new THREE.Mesh(rimGeo, rimMat);
-                rim.position.set(...pos);
-                carGroup.add(wheel, rim);
+                carGroup.add(wheel);
             });
 
-            // Faróis e Lanternas
-            const lightGeo = new THREE.BoxGeometry(0.4, 0.15, 0.1);
-            
-            // Farol dianteiro (Xenon/Amarelo brilhante)
-            const headL = new THREE.Mesh(lightGeo, new THREE.MeshBasicMaterial({ color: 0xffeebb }));
-            headL.position.set(-0.6, 0.75, -1.91);
-            const headR = new THREE.Mesh(lightGeo, new THREE.MeshBasicMaterial({ color: 0xffeebb }));
-            headR.position.set(0.6, 0.75, -1.91);
-            carGroup.add(headL, headR);
+            // Lanternas Traseiras
+            const tailLight = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.3, 0.1), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
+            tailLight.position.set(0, 1.0, 2.41);
+            carGroup.add(tailLight);
 
-            // Lanterna Traseira (Vermelho Vivo)
-            const tailL = new THREE.Mesh(lightGeo, new THREE.MeshBasicMaterial({ color: 0xff0022 }));
-            tailL.position.set(-0.6, 0.75, 1.91);
-            const tailR = new THREE.Mesh(lightGeo, new THREE.MeshBasicMaterial({ color: 0xff0022 }));
-            tailR.position.set(0.6, 0.75, 1.91);
-            carGroup.add(tailL, tailR);
-
+            // Hitbox maior para SUV
+            carGroup.userData = { hitWidth: 2.4, hitLength: 4.8 };
             return carGroup;
         }
 
-        // Criando Jogador
+        // Inimigo 2: Corredor Tunado (Bem baixo e com Neon vibrante)
+        function createTunedEnemy(colorHex, neonHex) {
+            const carGroup = new THREE.Group();
+            const bodyMat = new THREE.MeshPhongMaterial({ color: colorHex, shininess: 150 });
+            const glassMat = new THREE.MeshPhongMaterial({ color: 0x050505, shininess: 100 });
+
+            // Chassi Super Baixo
+            const bodyMesh = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.4, 4.0), bodyMat);
+            bodyMesh.position.set(0, 0.5, 0);
+            carGroup.add(bodyMesh);
+
+            const cabinMesh = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.4, 1.8), glassMat);
+            cabinMesh.position.set(0, 0.9, -0.2);
+            carGroup.add(cabinMesh);
+
+            // Aerofólio Gigante Traseiro
+            const wingBlade = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.1, 0.6), new THREE.MeshPhongMaterial({ color: 0x111111 }));
+            wingBlade.position.set(0, 1.0, 1.8);
+            carGroup.add(wingBlade);
+
+            // Rodas Esportivas
+            const wheelGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.4, 16);
+            const wheelMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
+            wheelGeo.rotateZ(Math.PI / 2);
+
+            [[-1.1, 0.35, 1.3], [1.1, 0.35, 1.3], [-1.1, 0.35, -1.3], [1.1, 0.35, -1.3]].forEach(pos => {
+                const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                wheel.position.set(...pos);
+                carGroup.add(wheel);
+            });
+
+            // Luz Neon Underglow no Asfalto (Marca Registrada dos Tunados)
+            const underglowPlaneGeo = new THREE.PlaneGeometry(2.6, 4.4);
+            const underglowMat = new THREE.MeshBasicMaterial({ color: neonHex, transparent: true, opacity: 0.7 });
+            const underglowMesh = new THREE.Mesh(underglowPlaneGeo, underglowMat);
+            underglowMesh.rotation.x = -Math.PI / 2;
+            underglowMesh.position.set(0, 0.05, 0); // Bem rente ao chão
+            carGroup.add(underglowMesh);
+
+            // Hitbox normal
+            carGroup.userData = { hitWidth: 2.1, hitLength: 4.0 };
+            return carGroup;
+        }
+
+
+        // Inicializando o Jogador
         const playerCar = createPlayerCarMesh();
         playerCar.position.set(0, 0, 10);
         scene.add(playerCar);
 
-        // Câmera
         camera.position.set(0, 4.5, 17);
         camera.lookAt(playerCar.position.x, 1, playerCar.position.z - 10);
 
@@ -389,7 +338,7 @@
             if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
         });
 
-        // Variáveis de Jogo
+        // Lógica de Trânsito
         let obstacles = [];
         let score = 0;
         let speed = 0.9;
@@ -397,10 +346,24 @@
         let frameCounter = 0;
 
         function spawnObstacle() {
-            // Cores mais legais para os carros inimigos
-            const enemyColors = [0xcc0000, 0x00cc44, 0xffaa00, 0x7700cc, 0xff0077, 0x0055ff];
-            const randomColor = enemyColors[Math.floor(Math.random() * enemyColors.length)];
-            const obstacle = createEnemyCarMesh(randomColor);
+            // Sorteia se vai ser SUV ou Tunado
+            const isSUV = Math.random() > 0.5;
+            let obstacle;
+
+            if (isSUV) {
+                const suvColors = [0xaaaaaa, 0x111111, 0x880000, 0x223344];
+                const color = suvColors[Math.floor(Math.random() * suvColors.length)];
+                obstacle = createSUV(color);
+            } else {
+                const tunedColors = [
+                    { body: 0x111111, neon: 0x00ff00 }, // Preto com neon verde
+                    { body: 0xff0055, neon: 0xff00aa }, // Rosa com neon rosa
+                    { body: 0x3300aa, neon: 0x9900ff }, // Roxo com neon roxo
+                    { body: 0xeeaa00, neon: 0xff3300 }  // Amarelo com neon laranja
+                ];
+                const style = tunedColors[Math.floor(Math.random() * tunedColors.length)];
+                obstacle = createTunedEnemy(style.body, style.neon);
+            }
             
             const lanes = [-4.5, -1.5, 1.5, 4.5];
             const laneX = lanes[Math.floor(Math.random() * lanes.length)];
@@ -410,13 +373,12 @@
             obstacles.push(obstacle);
         }
 
-        // Loop Principal
+        // Loop de Animação
         function animate() {
             if (isGameOver) return;
-
             requestAnimationFrame(animate);
 
-            // Movimentação com física de inclinação leve
+            // Dirigindo o jogador
             const steerSpeed = 0.28;
             const maxBound = (roadWidth / 2) - 1.5;
 
@@ -430,37 +392,29 @@
                 playerCar.rotation.z = 0;
             }
 
-            // Mover Faixas, Prédios e Postes
-            stripes.forEach(s => {
-                s.position.z += speed;
-                if (s.position.z > 30) s.position.z -= roadLength;
-            });
+            // Sensação de Velocidade
+            stripes.forEach(s => { s.position.z += speed; if (s.position.z > 30) s.position.z -= roadLength; });
+            buildings.forEach(b => { b.position.z += speed; if (b.position.z > 30) b.position.z -= roadLength; });
+            streetlights.forEach(sl => { sl.position.z += speed; if (sl.position.z > 30) sl.position.z -= roadLength; });
 
-            buildings.forEach(b => {
-                b.position.z += speed;
-                if (b.position.z > 30) b.position.z -= roadLength;
-            });
-
-            streetlights.forEach(sl => {
-                sl.position.z += speed;
-                if (sl.position.z > 30) sl.position.z -= roadLength;
-            });
-
-            // Criar Inimigos
+            // Inimigos
             frameCounter++;
             if (frameCounter % Math.max(25, Math.floor(70 - score / 120)) === 0) {
                 spawnObstacle();
             }
 
-            // Movimentação e Colisão
             for (let i = obstacles.length - 1; i >= 0; i--) {
                 const obs = obstacles[i];
                 obs.position.z += speed;
 
+                // Colisão dinâmica baseada no tamanho do inimigo (SUV é maior)
+                const hitW = (obs.userData.hitWidth / 2) + 1.0;
+                const hitL = (obs.userData.hitLength / 2) + 1.9;
+
                 const dx = Math.abs(playerCar.position.x - obs.position.x);
                 const dz = Math.abs(playerCar.position.z - obs.position.z);
 
-                if (dx < 1.9 && dz < 3.4) {
+                if (dx < hitW && dz < hitL) {
                     isGameOver = true;
                     document.getElementById('game-over').style.display = 'block';
                 }
@@ -471,7 +425,7 @@
                 }
             }
 
-            // Pontuação e Velocidade
+            // Pontos e Dificuldade
             score += 1;
             speed += 0.00025;
             document.getElementById('score').innerText = Math.floor(score / 10);
@@ -479,14 +433,12 @@
             renderer.render(scene, camera);
         }
 
-        // Redimensionar Tela
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Iniciar
         animate();
     </script>
 </body>
