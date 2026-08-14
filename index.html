@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Mini Jogo de Corrida</title>
+    <title>Mini Jogo de Corrida - Gráficos Melhorados</title>
     <style>
         body {
             margin: 0;
@@ -19,16 +19,16 @@
             margin-bottom: 5px;
         }
         canvas {
-            background-color: #444;
-            border: 5px solid #777;
-            box-shadow: 0 0 15px black;
+            background-color: #333;
+            border: 5px solid #666;
+            box-shadow: 0 0 20px black;
             border-radius: 5px;
         }
     </style>
 </head>
 <body>
 
-    <h2>🚦 Mini Corrida Retrô 🚦</h2>
+    <h2>🚦 Corrida Retrô: Edição Tunada 🚦</h2>
     <p>Use as <b>setas Esquerda e Direita</b> do teclado para desviar dos carros vermelhos!</p>
     
     <canvas id="gameCanvas" width="400" height="600"></canvas>
@@ -37,24 +37,21 @@
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
-        // Configurações do carro do jogador
+        // Configurações do carro
         let carWidth = 40;
         let carHeight = 70;
         let playerX = canvas.width / 2 - carWidth / 2;
         let playerY = canvas.height - carHeight - 20;
-        let playerSpeed = 6; // Velocidade de movimento lateral
+        let playerSpeed = 6;
 
-        // Controles
         let leftPressed = false;
         let rightPressed = false;
 
-        // Variáveis do jogo
         let obstacles = [];
         let score = 0;
-        let gameSpeed = 4; // Velocidade da pista
+        let gameSpeed = 4;
         let isGameOver = false;
 
-        // Escuta os botões do teclado
         document.addEventListener("keydown", keyDownHandler, false);
         document.addEventListener("keyup", keyUpHandler, false);
 
@@ -68,23 +65,57 @@
             else if(e.key == "Left" || e.key == "ArrowLeft") leftPressed = false;
         }
 
-        // Função para desenhar os carros
-        function drawCar(x, y, color) {
+        // Função melhorada para desenhar os carros
+        function drawCar(x, y, color, isPlayer) {
+            // 1. Pneus (Pretos)
+            ctx.fillStyle = "#111";
+            ctx.fillRect(x - 4, y + 10, 4, 15); // Pneu esquerdo superior
+            ctx.fillRect(x + carWidth, y + 10, 4, 15); // Pneu direito superior
+            ctx.fillRect(x - 4, y + carHeight - 25, 4, 15); // Pneu esquerdo inferior
+            ctx.fillRect(x + carWidth, y + carHeight - 25, 4, 15); // Pneu direito inferior
+
+            // 2. Chassi (Corpo principal do carro)
             ctx.fillStyle = color;
-            ctx.fillRect(x, y, carWidth, carHeight);
-            
-            // Desenha os vidros para parecer mais com um carro
-            ctx.fillStyle = "#add8e6"; // Azul claro
-            ctx.fillRect(x + 5, y + 10, carWidth - 10, 15); // Para-brisa
-            ctx.fillRect(x + 5, y + 45, carWidth - 10, 15); // Vidro traseiro
+            ctx.fillRect(x, y + 4, carWidth, carHeight - 8);
+            ctx.fillRect(x + 4, y, carWidth - 8, carHeight); // Cria um efeito de borda arredondada
+
+            // 3. Vidros (Para-brisa e traseiro)
+            ctx.fillStyle = "#1a1a1a";
+            ctx.fillRect(x + 4, y + 15, carWidth - 8, 12); // Para-brisa
+            ctx.fillRect(x + 4, y + carHeight - 25, carWidth - 8, 10); // Vidro Traseiro
+
+            // 4. Teto (Mesma cor do chassi)
+            ctx.fillStyle = color;
+            ctx.fillRect(x + 6, y + 27, carWidth - 12, carHeight - 52);
+
+            // 5. Faróis Dianteiros
+            ctx.fillStyle = isPlayer ? "#FFF" : "#FFD700"; // Branco pro jogador, Amarelo pros inimigos
+            ctx.fillRect(x + 4, y + 2, 8, 4);
+            ctx.fillRect(x + carWidth - 12, y + 2, 8, 4);
+
+            // 6. Lanternas Traseiras (Vermelhas)
+            ctx.fillStyle = "#FF0000";
+            ctx.fillRect(x + 4, y + carHeight - 6, 8, 4);
+            ctx.fillRect(x + carWidth - 12, y + carHeight - 6, 8, 4);
+
+            // 7. Listra de corrida (Apenas para o jogador)
+            if (isPlayer) {
+                ctx.fillStyle = "#FFF";
+                ctx.fillRect(x + carWidth / 2 - 2, y, 4, carHeight);
+            }
         }
 
-        // Função para desenhar a faixa da estrada
+        // Função para desenhar o asfalto e as faixas
         function drawRoad() {
+            // Desenha as margens da pista (Grama)
+            ctx.fillStyle = "#2E8B57"; // Verde escuro
+            ctx.fillRect(0, 0, 20, canvas.height);
+            ctx.fillRect(canvas.width - 20, 0, 20, canvas.height);
+
+            // Desenha a faixa central pontilhada
             ctx.fillStyle = "white";
-            ctx.setLineDash([30, 30]); // Cria o efeito pontilhado
+            ctx.setLineDash([30, 30]); 
             ctx.beginPath();
-            // Move a linha para criar ilusão de velocidade
             ctx.moveTo(canvas.width / 2, 0 - (score % 60)); 
             ctx.lineTo(canvas.width / 2, canvas.height);
             ctx.lineWidth = 5;
@@ -92,61 +123,68 @@
             ctx.stroke();
         }
 
-        // Função para desenhar a pontuação
         function drawScore() {
-            ctx.font = "20px Arial";
+            ctx.font = "bold 20px Arial";
             ctx.fillStyle = "yellow";
-            ctx.fillText("Pontos: " + Math.floor(score / 10), 10, 30);
+            // Adiciona uma sombra no texto para ler melhor
+            ctx.shadowColor = "black";
+            ctx.shadowBlur = 4;
+            ctx.fillText("Pontos: " + Math.floor(score / 10), 30, 30);
+            // Reseta a sombra para não bugar os carros
+            ctx.shadowBlur = 0; 
         }
 
-        // Tela de Fim de Jogo
         function drawGameOver() {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+            ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.font = "40px Arial";
-            ctx.fillStyle = "red";
-            ctx.fillText("BATIDA!", 120, canvas.height / 2);
+            
+            ctx.font = "bold 40px Arial";
+            ctx.fillStyle = "#FF4136"; // Vermelho forte
+            ctx.textAlign = "center";
+            ctx.fillText("FIM DE JOGO!", canvas.width / 2, canvas.height / 2);
+            
             ctx.font = "20px Arial";
             ctx.fillStyle = "white";
-            ctx.fillText("Aperte F5 para jogar de novo", 70, canvas.height / 2 + 40);
+            ctx.fillText("Aperte F5 para reiniciar", canvas.width / 2, canvas.height / 2 + 40);
+            ctx.textAlign = "left"; // Reseta o alinhamento
         }
 
-        // Loop principal do jogo
         function update() {
             if (isGameOver) {
                 drawGameOver();
-                return; // Para o jogo se bater
+                return; 
             }
 
-            // Limpa a tela a cada frame
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             drawRoad();
             drawScore();
 
-            // Movimenta o jogador
-            if (rightPressed && playerX < canvas.width - carWidth) {
+            // Movimenta o jogador limitando pelas bordas da grama (20px)
+            if (rightPressed && playerX < canvas.width - carWidth - 20) {
                 playerX += playerSpeed;
             }
-            else if (leftPressed && playerX > 0) {
+            else if (leftPressed && playerX > 20) {
                 playerX -= playerSpeed;
             }
 
-            // Desenha o jogador (Carro Azul)
-            drawCar(playerX, playerY, "#007BFF");
+            // Desenha o jogador (Azul, passando 'true' para os detalhes extras)
+            drawCar(playerX, playerY, "#0074D9", true);
 
-            // Cria carros inimigos (obstáculos) aleatoriamente
+            // Cria carros inimigos
             if (Math.random() < 0.03) {
-                let obsX = Math.random() * (canvas.width - carWidth);
+                // Sorteia posição respeitando a grama nas bordas
+                let obsX = 20 + Math.random() * (canvas.width - carWidth - 40);
                 obstacles.push({x: obsX, y: -carHeight});
             }
 
-            // Atualiza e desenha os inimigos
             for (let i = 0; i < obstacles.length; i++) {
-                obstacles[i].y += gameSpeed; // Inimigo desce a tela
-                drawCar(obstacles[i].x, obstacles[i].y, "#DC3545"); // Carro Vermelho
+                obstacles[i].y += gameSpeed; 
+                
+                // Desenha os inimigos (Vermelhos, passando 'false')
+                drawCar(obstacles[i].x, obstacles[i].y, "#FF4136", false); 
 
-                // Lógica de Colisão (se o jogador bater no inimigo)
+                // Lógica de Colisão
                 if (playerX < obstacles[i].x + carWidth &&
                     playerX + carWidth > obstacles[i].x &&
                     playerY < obstacles[i].y + carHeight &&
@@ -154,7 +192,6 @@
                     isGameOver = true;
                 }
 
-                // Remove os carros que já saíram da tela para não pesar o PC
                 if (obstacles[i].y > canvas.height) {
                     obstacles.splice(i, 1);
                     i--;
@@ -163,16 +200,13 @@
 
             score++;
             
-            // Aumenta a dificuldade com o tempo
             if (score % 500 == 0) {
                 gameSpeed += 0.5;
             }
 
-            // Chama o próximo frame
             requestAnimationFrame(update);
         }
 
-        // Inicia o jogo
         update();
     </script>
 </body>
