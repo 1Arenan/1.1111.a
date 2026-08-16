@@ -1,14 +1,11 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clone UI - Dark Mode com Imagem</title>
-    <!-- Adicionando FontAwesome para os ícones -->
+    <title>Clone Instagram - UI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Reset e Variáveis Básicas */
         * {
             margin: 0;
             padding: 0;
@@ -25,11 +22,10 @@
         }
 
         a { text-decoration: none; color: inherit; }
-        ul { list-style: none; }
-
-        /* Barra Lateral Esquerda (Sidebar) */
+        
+        /* Barra Lateral */
         .sidebar {
-            width: 80px;
+            width: 72px;
             border-right: 1px solid #262626;
             display: flex;
             flex-direction: column;
@@ -38,23 +34,21 @@
         }
 
         .sidebar-icon {
-            margin-bottom: 30px;
+            margin-bottom: 35px;
             font-size: 24px;
             color: #fff;
             cursor: pointer;
-            transition: transform 0.2s;
         }
 
-        .sidebar-icon:hover { transform: scale(1.1); }
-        .sidebar-icon img.profile-pic-small {
+        .sidebar-icon img {
             width: 28px;
             height: 28px;
             border-radius: 50%;
             object-fit: cover;
-            background-color: #ccc;
+            border: 1px solid #262626;
         }
 
-        /* Área Principal */
+        /* Container Principal */
         .main-container {
             display: flex;
             flex: 1;
@@ -65,15 +59,15 @@
 
         .content-area {
             width: 100%;
-            max-width: 630px;
-            margin-right: 32px;
+            max-width: 470px;
+            margin-right: 64px;
         }
 
         /* Stories */
         .stories-container {
             display: flex;
             gap: 15px;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             overflow-x: auto;
             padding-bottom: 10px;
         }
@@ -104,7 +98,6 @@
             height: 60px;
             border-radius: 50%;
             border: 2px solid #000;
-            background-color: #444;
             overflow: hidden;
         }
 
@@ -122,10 +115,10 @@
             white-space: nowrap;
             width: 100%;
             text-align: center;
-            color: #a8a8a8;
+            color: #f5f5f5;
         }
 
-        /* Feed Post */
+        /* Post do Feed */
         .post {
             border-bottom: 1px solid #262626;
             padding-bottom: 20px;
@@ -148,7 +141,6 @@
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            background-color: #555;
             overflow: hidden;
         }
 
@@ -159,35 +151,27 @@
         }
 
         .post-username { font-weight: 600; font-size: 14px; }
-        .post-time { color: #a8a8a8; font-size: 14px; }
-        .post-options { color: #fff; cursor: pointer; }
+        .post-time { color: #a8a8a8; font-weight: 400; }
+        .post-subtitle { display: block; font-size: 12px; font-weight: 400; }
 
         .post-image-container {
             width: 100%;
             border-radius: 4px;
             overflow: hidden;
-            background-color: #262626;
-            aspect-ratio: 4/5;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             border: 1px solid #262626;
         }
 
         .post-image-container img {
             width: 100%;
-            height: 100%;
-            object-fit: cover; /* Faz a imagem preencher o espaço sem amassar */
+            display: block;
+            object-fit: cover;
         }
 
-        /* Painel Direito (Sugestões e Perfil) */
+        /* Painel Direito */
         .right-panel {
-            width: 320px;
-            margin-top: 20px;
-            display: none;
+            width: 319px;
+            margin-top: 15px;
         }
-
-        @media (min-width: 1000px) { .right-panel { display: block; } }
 
         .profile-summary {
             display: flex;
@@ -197,35 +181,29 @@
         }
 
         .profile-summary .info { display: flex; align-items: center; gap: 15px; }
-        .profile-summary .avatar { width: 44px; height: 44px; border-radius: 50%; background-color: #777; overflow: hidden; }
+        .profile-summary .avatar { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; }
+        .profile-summary .avatar img { width: 100%; height: 100%; object-fit: cover; }
         .profile-summary .names .username { font-weight: 600; font-size: 14px; }
         .profile-summary .names .fullname { color: #a8a8a8; font-size: 14px; margin-top: 2px; }
         .action-text { color: #0095f6; font-size: 12px; font-weight: 600; cursor: pointer; }
 
         .suggestions-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
         .suggestions-header span { color: #a8a8a8; font-weight: 600; font-size: 14px; }
-        .suggestions-header a { font-size: 12px; font-weight: 600; }
+        .suggestions-header a { font-size: 12px; font-weight: 600; color: #fff; }
 
-        .suggestion-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-
-        /* Modal / Chat Flutuante à Direita */
+        /* Modal / Chat Flutuante */
         .chat-overlay {
             position: fixed;
             bottom: 0;
             right: 80px;
-            width: 350px;
-            height: 500px;
-            background-color: #121212;
-            border: 1px solid #262626;
+            width: 340px;
+            height: 520px;
+            background-color: #262626; /* Cor do fundo do chat baseada na imagem */
+            border: 1px solid #363636;
             border-radius: 12px 12px 0 0;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.6);
             z-index: 1000;
         }
 
@@ -234,32 +212,28 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px 16px;
-            border-bottom: 1px solid #262626;
-            font-weight: 600;
+            border-bottom: 1px solid #363636;
+            background-color: #121212;
+            border-radius: 12px 12px 0 0;
         }
         
-        .chat-header-left { display: flex; align-items: center; gap: 10px; }
-        .chat-header-actions { display: flex; gap: 15px; color: #fff; font-size: 18px; }
+        .chat-header-left { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 16px; }
+        .chat-header-actions { display: flex; gap: 18px; color: #fff; font-size: 18px; }
 
         .chat-content {
             flex: 1;
-            background-color: #000;
+            background-color: #121212;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            position: relative;
+            padding: 10px;
         }
 
         .chat-image-placeholder {
-            width: 90%;
-            height: 80%;
-            background-color: #333;
+            width: 100%;
+            height: 100%;
             border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #777;
             overflow: hidden;
         }
 
@@ -280,19 +254,18 @@
         .chat-input-box {
             flex: 1;
             background-color: #262626;
-            border: none;
+            border: 1px solid #363636;
             border-radius: 20px;
             padding: 10px 15px;
             color: #fff;
             outline: none;
         }
 
-        .chat-icons { display: flex; gap: 12px; font-size: 20px; color: #fff; cursor: pointer;}
+        .chat-icons { display: flex; gap: 12px; font-size: 20px; color: #fff; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <!-- Barra Lateral -->
     <nav class="sidebar">
         <i class="fa-brands fa-instagram sidebar-icon"></i>
         <i class="fa-solid fa-house sidebar-icon"></i>
@@ -302,71 +275,64 @@
         <i class="fa-regular fa-paper-plane sidebar-icon"></i>
         <i class="fa-regular fa-heart sidebar-icon"></i>
         <i class="fa-regular fa-square-plus sidebar-icon"></i>
-        <!-- Exemplo de avatar na barra lateral usando a imagem -->
         <div class="sidebar-icon">
-            <img src="image_ad46de.jpg" alt="Perfil" class="profile-pic-small">
+            <img src="image_acedba.jpg" alt="Seu Perfil">
         </div>
         <i class="fa-solid fa-bars sidebar-icon" style="margin-top: auto;"></i>
     </nav>
 
-    <!-- Container Principal -->
     <main class="main-container">
-        
-        <!-- Feed de Conteúdo -->
         <div class="content-area">
             
-            <!-- Stories -->
             <div class="stories-container">
                 <div class="story">
-                    <div class="story-ring"><div class="story-img"><img src="image_ad46de.jpg" alt="Story"></div></div>
+                    <div class="story-ring"><div class="story-img"><img src="image_acedba.jpg" alt="Story"></div></div>
                     <span class="story-username">brun1zyz.r...</span>
                 </div>
                 <div class="story">
-                    <div class="story-ring"><div class="story-img"></div></div>
+                    <div class="story-ring"><div class="story-img"><img src="image_acedba.jpg" alt="Story"></div></div>
                     <span class="story-username">lucindovp....</span>
                 </div>
                 <div class="story">
-                    <div class="story-ring"><div class="story-img"></div></div>
+                    <div class="story-ring"><div class="story-img"><img src="image_acedba.jpg" alt="Story"></div></div>
                     <span class="story-username">iae_kayke_...</span>
                 </div>
                 <div class="story">
-                    <div class="story-ring"><div class="story-img"></div></div>
+                    <div class="story-ring"><div class="story-img"><img src="image_acedba.jpg" alt="Story"></div></div>
                     <span class="story-username">renan_vini...</span>
                 </div>
                 <div class="story">
-                    <div class="story-ring"><div class="story-img"></div></div>
+                    <div class="story-ring"><div class="story-img"><img src="image_acedba.jpg" alt="Story"></div></div>
                     <span class="story-username">thurxpz.012</span>
                 </div>
                 <div class="story">
-                    <div class="story-ring"><div class="story-img"></div></div>
+                    <div class="story-ring"><div class="story-img"><img src="image_acedba.jpg" alt="Story"></div></div>
                     <span class="story-username">arthur077_...</span>
                 </div>
             </div>
 
-            <!-- Post Único -->
             <article class="post">
                 <div class="post-header">
                     <div class="post-user-info">
                         <div class="post-user-img">
-                            <img src="image_ad46de.jpg" alt="Avatar">
+                            <img src="image_acedba.jpg" alt="Avatar do Autor">
                         </div>
-                        <span class="post-username">isaque_gabriel_044 <span class="post-time">• 1 d</span></span>
+                        <span class="post-username">isaque_gabriel_044 <span class="post-time">• 1 d</span><br><span class="post-subtitle">Conteúdo de IA</span></span>
                     </div>
-                    <i class="fa-solid fa-ellipsis post-options"></i>
+                    <i class="fa-solid fa-ellipsis" style="color: #fff; cursor: pointer;"></i>
                 </div>
                 <div class="post-image-container">
-                    <!-- Imagem principal do feed inserida aqui -->
-                    <img src="image_ad46de.jpg" alt="Foto do Feed: Academia">
+                    <!-- Imagem grande do feed -->
+                    <img src="image_acedba.jpg" alt="Post do Feed">
                 </div>
             </article>
         </div>
 
-        <!-- Painel Lateral Direito -->
         <aside class="right-panel">
             <div class="profile-summary">
                 <div class="info">
                     <div class="avatar">
-                        <img src="image_ad46de.jpg" alt="Seu Perfil" style="width: 100%; height: 100%; object-fit: cover;">
+                        <img src="image_acedba.jpg" alt="Seu Perfil Atual">
                     </div>
                     <div class="names">
                         <div class="username">renanguimaraesdo</div>
@@ -380,24 +346,21 @@
                 <span>Sugestões para você</span>
                 <a href="#">Ver tudo</a>
             </div>
-
-            <!-- Item Sugestão -->
-            <div class="suggestion-item">
-                <div class="profile-summary" style="margin-bottom: 0;">
-                    <div class="info">
-                        <div class="avatar" style="width: 32px; height: 32px;"></div>
-                        <div class="names">
-                            <div class="username" style="font-size: 13px;">guil...</div>
-                        </div>
+            
+            <div class="profile-summary" style="margin-bottom: 12px;">
+                <div class="info">
+                    <div class="avatar" style="width: 32px; height: 32px;">
+                        <img src="image_acedba.jpg" alt="Sugestão">
+                    </div>
+                    <div class="names">
+                        <div class="username" style="font-size: 13px;">guil...</div>
                     </div>
                 </div>
                 <div class="action-text">Seguir</div>
             </div>
         </aside>
-
     </main>
 
-    <!-- Chat/Modal Flutuante à Direita -->
     <div class="chat-overlay">
         <div class="chat-header">
             <div class="chat-header-left">
@@ -412,9 +375,10 @@
         </div>
         
         <div class="chat-content">
+            <div style="font-size: 11px; color: #a8a8a8; margin-bottom: 10px;">QUI, 22:50</div>
             <div class="chat-image-placeholder">
-                <!-- Imagem do chat inserida aqui -->
-                <img src="image_ad46de.jpg" alt="Imagem enviada no chat">
+                <!-- Imagem do Chat -->
+                <img src="image_acedba.jpg" alt="Imagem enviada no chat">
             </div>
         </div>
 
