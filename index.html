@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clone UI - Dark Mode</title>
+    <title>Clone UI - Dark Mode com Imagem</title>
     <!-- Adicionando FontAwesome para os ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -28,7 +29,7 @@
 
         /* Barra Lateral Esquerda (Sidebar) */
         .sidebar {
-            width: 80px; /* Reduzido para focar apenas nos ícones como na imagem */
+            width: 80px;
             border-right: 1px solid #262626;
             display: flex;
             flex-direction: column;
@@ -104,6 +105,13 @@
             border-radius: 50%;
             border: 2px solid #000;
             background-color: #444;
+            overflow: hidden;
+        }
+
+        .story-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .story-username {
@@ -141,6 +149,13 @@
             height: 32px;
             border-radius: 50%;
             background-color: #555;
+            overflow: hidden;
+        }
+
+        .post-user-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .post-username { font-weight: 600; font-size: 14px; }
@@ -152,11 +167,17 @@
             border-radius: 4px;
             overflow: hidden;
             background-color: #262626;
-            aspect-ratio: 4/5; /* Aspecto similar à foto de academia */
+            aspect-ratio: 4/5;
             display: flex;
             align-items: center;
             justify-content: center;
             border: 1px solid #262626;
+        }
+
+        .post-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Faz a imagem preencher o espaço sem amassar */
         }
 
         /* Painel Direito (Sugestões e Perfil) */
@@ -176,7 +197,7 @@
         }
 
         .profile-summary .info { display: flex; align-items: center; gap: 15px; }
-        .profile-summary .avatar { width: 44px; height: 44px; border-radius: 50%; background-color: #777; }
+        .profile-summary .avatar { width: 44px; height: 44px; border-radius: 50%; background-color: #777; overflow: hidden; }
         .profile-summary .names .username { font-weight: 600; font-size: 14px; }
         .profile-summary .names .fullname { color: #a8a8a8; font-size: 14px; margin-top: 2px; }
         .action-text { color: #0095f6; font-size: 12px; font-weight: 600; cursor: pointer; }
@@ -239,6 +260,13 @@
             align-items: center;
             justify-content: center;
             color: #777;
+            overflow: hidden;
+        }
+
+        .chat-image-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .chat-input-area {
@@ -274,7 +302,10 @@
         <i class="fa-regular fa-paper-plane sidebar-icon"></i>
         <i class="fa-regular fa-heart sidebar-icon"></i>
         <i class="fa-regular fa-square-plus sidebar-icon"></i>
-        <div class="sidebar-icon"><img src="" alt="" class="profile-pic-small"></div>
+        <!-- Exemplo de avatar na barra lateral usando a imagem -->
+        <div class="sidebar-icon">
+            <img src="image_ad46de.jpg" alt="Perfil" class="profile-pic-small">
+        </div>
         <i class="fa-solid fa-bars sidebar-icon" style="margin-top: auto;"></i>
     </nav>
 
@@ -286,9 +317,8 @@
             
             <!-- Stories -->
             <div class="stories-container">
-                <!-- Repetição de Story -->
                 <div class="story">
-                    <div class="story-ring"><div class="story-img"></div></div>
+                    <div class="story-ring"><div class="story-img"><img src="image_ad46de.jpg" alt="Story"></div></div>
                     <span class="story-username">brun1zyz.r...</span>
                 </div>
                 <div class="story">
@@ -317,14 +347,16 @@
             <article class="post">
                 <div class="post-header">
                     <div class="post-user-info">
-                        <div class="post-user-img"></div>
+                        <div class="post-user-img">
+                            <img src="image_ad46de.jpg" alt="Avatar">
+                        </div>
                         <span class="post-username">isaque_gabriel_044 <span class="post-time">• 1 d</span></span>
                     </div>
                     <i class="fa-solid fa-ellipsis post-options"></i>
                 </div>
                 <div class="post-image-container">
-                    <!-- Placeholder simulando a foto da academia -->
-                    <span style="color: #666;">[ Foto do Feed: Academia ]</span>
+                    <!-- Imagem principal do feed inserida aqui -->
+                    <img src="image_ad46de.jpg" alt="Foto do Feed: Academia">
                 </div>
             </article>
         </div>
@@ -333,7 +365,9 @@
         <aside class="right-panel">
             <div class="profile-summary">
                 <div class="info">
-                    <div class="avatar"></div>
+                    <div class="avatar">
+                        <img src="image_ad46de.jpg" alt="Seu Perfil" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
                     <div class="names">
                         <div class="username">renanguimaraesdo</div>
                         <div class="fullname">Renan Guimarães do Rosario</div>
@@ -359,12 +393,11 @@
                 </div>
                 <div class="action-text">Seguir</div>
             </div>
-            <!-- Adicione mais conforme necessário -->
         </aside>
 
     </main>
 
-    <!-- Chat/Modal Flutuante à Direita (Simulando a visualização de vídeo do 'Lucas') -->
+    <!-- Chat/Modal Flutuante à Direita -->
     <div class="chat-overlay">
         <div class="chat-header">
             <div class="chat-header-left">
@@ -379,9 +412,9 @@
         </div>
         
         <div class="chat-content">
-            <!-- Placeholder para a foto/vídeo do pássaro na gaiola -->
             <div class="chat-image-placeholder">
-                [ Imagem: Homem com Gaiola ]
+                <!-- Imagem do chat inserida aqui -->
+                <img src="image_ad46de.jpg" alt="Imagem enviada no chat">
             </div>
         </div>
 
