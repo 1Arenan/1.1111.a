@@ -1,593 +1,398 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Corrida 3D Realista - Next-Gen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clone UI - Dark Mode</title>
+    <!-- Adicionando FontAwesome para os ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
+        /* Reset e Variáveis Básicas */
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            display: flex;
+            height: 100vh;
             overflow: hidden;
-            background-color: #020205;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: white;
-            user-select: none;
         }
-        #ui {
-            position: absolute;
-            top: 20px;
-            left: 20px;
+
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+
+        /* Barra Lateral Esquerda (Sidebar) */
+        .sidebar {
+            width: 80px; /* Reduzido para focar apenas nos ícones como na imagem */
+            border-right: 1px solid #262626;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            align-items: center;
+        }
+
+        .sidebar-icon {
+            margin-bottom: 30px;
             font-size: 24px;
-            font-weight: 800;
             color: #fff;
-            text-shadow: 0 0 12px #00f0ff, 2px 2px 6px #000;
-            z-index: 10;
-            letter-spacing: 1px;
+            cursor: pointer;
+            transition: transform 0.2s;
         }
-        #game-over {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(8, 8, 16, 0.95);
-            padding: 40px 60px;
-            border: 2px solid #ff0055;
-            border-radius: 16px;
+
+        .sidebar-icon:hover { transform: scale(1.1); }
+        .sidebar-icon img.profile-pic-small {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #ccc;
+        }
+
+        /* Área Principal */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow-y: auto;
+            justify-content: center;
+            padding-top: 30px;
+        }
+
+        .content-area {
+            width: 100%;
+            max-width: 630px;
+            margin-right: 32px;
+        }
+
+        /* Stories */
+        .stories-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 40px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+        
+        .stories-container::-webkit-scrollbar { display: none; }
+
+        .story {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 66px;
+            cursor: pointer;
+        }
+
+        .story-ring {
+            width: 66px;
+            height: 66px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            padding: 2px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .story-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid #000;
+            background-color: #444;
+        }
+
+        .story-username {
+            font-size: 12px;
+            margin-top: 5px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+            width: 100%;
             text-align: center;
+            color: #a8a8a8;
+        }
+
+        /* Feed Post */
+        .post {
+            border-bottom: 1px solid #262626;
+            padding-bottom: 20px;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .post-user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .post-user-img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #555;
+        }
+
+        .post-username { font-weight: 600; font-size: 14px; }
+        .post-time { color: #a8a8a8; font-size: 14px; }
+        .post-options { color: #fff; cursor: pointer; }
+
+        .post-image-container {
+            width: 100%;
+            border-radius: 4px;
+            overflow: hidden;
+            background-color: #262626;
+            aspect-ratio: 4/5; /* Aspecto similar à foto de academia */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #262626;
+        }
+
+        /* Painel Direito (Sugestões e Perfil) */
+        .right-panel {
+            width: 320px;
+            margin-top: 20px;
             display: none;
-            z-index: 20;
-            box-shadow: 0 0 40px rgba(255, 0, 85, 0.5);
-            backdrop-filter: blur(8px);
         }
-        #game-over h1 {
-            color: #ff0055;
-            margin-top: 0;
-            font-size: 38px;
-            text-shadow: 0 0 15px #ff0055;
+
+        @media (min-width: 1000px) { .right-panel { display: block; } }
+
+        .profile-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
         }
-        #game-over p {
-            font-size: 18px;
-            color: #cccccc;
+
+        .profile-summary .info { display: flex; align-items: center; gap: 15px; }
+        .profile-summary .avatar { width: 44px; height: 44px; border-radius: 50%; background-color: #777; }
+        .profile-summary .names .username { font-weight: 600; font-size: 14px; }
+        .profile-summary .names .fullname { color: #a8a8a8; font-size: 14px; margin-top: 2px; }
+        .action-text { color: #0095f6; font-size: 12px; font-weight: 600; cursor: pointer; }
+
+        .suggestions-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .suggestions-header span { color: #a8a8a8; font-weight: 600; font-size: 14px; }
+        .suggestions-header a { font-size: 12px; font-weight: 600; }
+
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
         }
+
+        /* Modal / Chat Flutuante à Direita */
+        .chat-overlay {
+            position: fixed;
+            bottom: 0;
+            right: 80px;
+            width: 350px;
+            height: 500px;
+            background-color: #121212;
+            border: 1px solid #262626;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid #262626;
+            font-weight: 600;
+        }
+        
+        .chat-header-left { display: flex; align-items: center; gap: 10px; }
+        .chat-header-actions { display: flex; gap: 15px; color: #fff; font-size: 18px; }
+
+        .chat-content {
+            flex: 1;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .chat-image-placeholder {
+            width: 90%;
+            height: 80%;
+            background-color: #333;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #777;
+        }
+
+        .chat-input-area {
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background-color: #121212;
+        }
+
+        .chat-input-box {
+            flex: 1;
+            background-color: #262626;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 15px;
+            color: #fff;
+            outline: none;
+        }
+
+        .chat-icons { display: flex; gap: 12px; font-size: 20px; color: #fff; cursor: pointer;}
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-    <div id="ui">🏎️ PONTOS: <span id="score">0</span></div>
-    
-    <div id="game-over">
-        <h1>COLISÃO GRAVE! 💥</h1>
-        <p>Seu veículo ficou totalmente destruído.</p>
-        <p>Aperte <b>F5</b> para reiniciar a corrida.</p>
+    <!-- Barra Lateral -->
+    <nav class="sidebar">
+        <i class="fa-brands fa-instagram sidebar-icon"></i>
+        <i class="fa-solid fa-house sidebar-icon"></i>
+        <i class="fa-solid fa-magnifying-glass sidebar-icon"></i>
+        <i class="fa-brands fa-wpexplorer sidebar-icon"></i>
+        <i class="fa-solid fa-clapperboard sidebar-icon"></i>
+        <i class="fa-regular fa-paper-plane sidebar-icon"></i>
+        <i class="fa-regular fa-heart sidebar-icon"></i>
+        <i class="fa-regular fa-square-plus sidebar-icon"></i>
+        <div class="sidebar-icon"><img src="" alt="" class="profile-pic-small"></div>
+        <i class="fa-solid fa-bars sidebar-icon" style="margin-top: auto;"></i>
+    </nav>
+
+    <!-- Container Principal -->
+    <main class="main-container">
+        
+        <!-- Feed de Conteúdo -->
+        <div class="content-area">
+            
+            <!-- Stories -->
+            <div class="stories-container">
+                <!-- Repetição de Story -->
+                <div class="story">
+                    <div class="story-ring"><div class="story-img"></div></div>
+                    <span class="story-username">brun1zyz.r...</span>
+                </div>
+                <div class="story">
+                    <div class="story-ring"><div class="story-img"></div></div>
+                    <span class="story-username">lucindovp....</span>
+                </div>
+                <div class="story">
+                    <div class="story-ring"><div class="story-img"></div></div>
+                    <span class="story-username">iae_kayke_...</span>
+                </div>
+                <div class="story">
+                    <div class="story-ring"><div class="story-img"></div></div>
+                    <span class="story-username">renan_vini...</span>
+                </div>
+                <div class="story">
+                    <div class="story-ring"><div class="story-img"></div></div>
+                    <span class="story-username">thurxpz.012</span>
+                </div>
+                <div class="story">
+                    <div class="story-ring"><div class="story-img"></div></div>
+                    <span class="story-username">arthur077_...</span>
+                </div>
+            </div>
+
+            <!-- Post Único -->
+            <article class="post">
+                <div class="post-header">
+                    <div class="post-user-info">
+                        <div class="post-user-img"></div>
+                        <span class="post-username">isaque_gabriel_044 <span class="post-time">• 1 d</span></span>
+                    </div>
+                    <i class="fa-solid fa-ellipsis post-options"></i>
+                </div>
+                <div class="post-image-container">
+                    <!-- Placeholder simulando a foto da academia -->
+                    <span style="color: #666;">[ Foto do Feed: Academia ]</span>
+                </div>
+            </article>
+        </div>
+
+        <!-- Painel Lateral Direito -->
+        <aside class="right-panel">
+            <div class="profile-summary">
+                <div class="info">
+                    <div class="avatar"></div>
+                    <div class="names">
+                        <div class="username">renanguimaraesdo</div>
+                        <div class="fullname">Renan Guimarães do Rosario</div>
+                    </div>
+                </div>
+                <div class="action-text">Trocar</div>
+            </div>
+
+            <div class="suggestions-header">
+                <span>Sugestões para você</span>
+                <a href="#">Ver tudo</a>
+            </div>
+
+            <!-- Item Sugestão -->
+            <div class="suggestion-item">
+                <div class="profile-summary" style="margin-bottom: 0;">
+                    <div class="info">
+                        <div class="avatar" style="width: 32px; height: 32px;"></div>
+                        <div class="names">
+                            <div class="username" style="font-size: 13px;">guil...</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="action-text">Seguir</div>
+            </div>
+            <!-- Adicione mais conforme necessário -->
+        </aside>
+
+    </main>
+
+    <!-- Chat/Modal Flutuante à Direita (Simulando a visualização de vídeo do 'Lucas') -->
+    <div class="chat-overlay">
+        <div class="chat-header">
+            <div class="chat-header-left">
+                <i class="fa-solid fa-chevron-left"></i>
+                <span>Lucaxz ツ</span>
+            </div>
+            <div class="chat-header-actions">
+                <i class="fa-solid fa-phone"></i>
+                <i class="fa-solid fa-video"></i>
+                <i class="fa-solid fa-xmark"></i>
+            </div>
+        </div>
+        
+        <div class="chat-content">
+            <!-- Placeholder para a foto/vídeo do pássaro na gaiola -->
+            <div class="chat-image-placeholder">
+                [ Imagem: Homem com Gaiola ]
+            </div>
+        </div>
+
+        <div class="chat-input-area">
+            <i class="fa-regular fa-face-smile chat-icons"></i>
+            <input type="text" class="chat-input-box" placeholder="Mensagem...">
+            <i class="fa-solid fa-microphone chat-icons"></i>
+            <i class="fa-regular fa-image chat-icons"></i>
+            <i class="fa-regular fa-heart chat-icons"></i>
+        </div>
     </div>
 
-    <script>
-        // --- CONFIGURAÇÃO DA CENA & RENDERER ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x04040c);
-        scene.fog = new THREE.FogExp2(0x04040c, 0.008);
-
-        const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
-        
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.1;
-        document.body.appendChild(renderer.domElement);
-
-        // --- ILUMINAÇÃO AVANÇADA (PBR) ---
-        const ambientLight = new THREE.AmbientLight(0x667799, 0.7);
-        scene.add(ambientLight);
-
-        const dirLight = new THREE.DirectionalLight(0xddeeff, 1.2);
-        dirLight.position.set(40, 60, 20);
-        dirLight.castShadow = true;
-        dirLight.shadow.mapSize.width = 1024;
-        dirLight.shadow.mapSize.height = 1024;
-        scene.add(dirLight);
-
-        const moonLight = new THREE.DirectionalLight(0x00f0ff, 0.3);
-        moonLight.position.set(-30, 20, -50);
-        scene.add(moonLight);
-
-        // --- CÉU ESTRELADO ---
-        const starGeo = new THREE.BufferGeometry();
-        const starCount = 600;
-        const starPos = new Float32Array(starCount * 3);
-        for(let i = 0; i < starCount * 3; i += 3) {
-            starPos[i] = (Math.random() - 0.5) * 400;
-            starPos[i+1] = 20 + Math.random() * 100;
-            starPos[i+2] = (Math.random() - 0.5) * 400;
-        }
-        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-        const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.8, transparent: true, opacity: 0.8 });
-        scene.add(new THREE.Points(starGeo, starMat));
-
-        // --- PISTA E ESTRUTURA DA RODOVIA ---
-        const roadWidth = 15;
-        const roadLength = 300;
-
-        const roadGeo = new THREE.PlaneGeometry(roadWidth, roadLength);
-        const roadMat = new THREE.MeshStandardMaterial({ color: 0x111116, roughness: 0.6, metalness: 0.1 });
-        const road = new THREE.Mesh(roadGeo, roadMat);
-        road.rotation.x = -Math.PI / 2;
-        road.receiveShadow = true;
-        scene.add(road);
-
-        // Muretas de Proteção Metálicas (Guardrails)
-        const barrierGeo = new THREE.BoxGeometry(0.35, 0.9, roadLength);
-        const barrierMat = new THREE.MeshStandardMaterial({ color: 0x9999aa, metalness: 0.9, roughness: 0.2 });
-        
-        const leftBarrier = new THREE.Mesh(barrierGeo, barrierMat);
-        leftBarrier.position.set(-(roadWidth / 2 + 0.2), 0.45, 0);
-        scene.add(leftBarrier);
-
-        const rightBarrier = new THREE.Mesh(barrierGeo, barrierMat);
-        rightBarrier.position.set((roadWidth / 2 + 0.2), 0.45, 0);
-        scene.add(rightBarrier);
-
-        // Faixas de Sinalização
-        const stripes = [];
-        const stripeGeo = new THREE.PlaneGeometry(0.35, 4.5);
-        const stripeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        
-        [-2.5, 2.5].forEach(laneX => {
-            for (let z = -roadLength / 2; z < roadLength / 2; z += 10) {
-                const stripe = new THREE.Mesh(stripeGeo, stripeMat);
-                stripe.rotation.x = -Math.PI / 2;
-                stripe.position.set(laneX, 0.02, z);
-                scene.add(stripe);
-                stripes.push(stripe);
-            }
-        });
-
-        // --- CIDADE DE BACKGROUND ---
-        const buildings = [];
-        const streetlights = [];
-
-        function createBuilding(x, z) {
-            const bGroup = new THREE.Group();
-            const height = 30 + Math.random() * 50;
-            const width = 12 + Math.random() * 6;
-            const depth = 14 + Math.random() * 8;
-
-            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x090d18, roughness: 0.5, metalness: 0.2 });
-            const buildingMesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), bodyMat);
-            buildingMesh.position.y = height / 2;
-            bGroup.add(buildingMesh);
-
-            const windowColors = [0xffcc44, 0x00d2ff, 0xff0055, 0xffffff];
-            for (let y = 4; y < height - 3; y += 4.5) {
-                if (Math.random() > 0.3) {
-                    const winGeo = new THREE.BoxGeometry(width + 0.1, 1.5, depth + 0.1);
-                    const winMat = new THREE.MeshBasicMaterial({ color: windowColors[Math.floor(Math.random() * windowColors.length)] });
-                    const winMesh = new THREE.Mesh(winGeo, winMat);
-                    winMesh.position.y = y;
-                    bGroup.add(winMesh);
-                }
-            }
-
-            bGroup.position.set(x, 0, z);
-            scene.add(bGroup);
-            buildings.push(bGroup);
-        }
-
-        function createStreetLight(x, z, side) {
-            const group = new THREE.Group();
-            const poleMat = new THREE.MeshStandardMaterial({ color: 0x333344, metalness: 0.8, roughness: 0.3 });
-
-            const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.15, 7), poleMat);
-            pole.position.y = 3.5;
-            group.add(pole);
-
-            const arm = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.1, 0.1), poleMat);
-            arm.position.set(side * 0.8, 6.9, 0);
-            group.add(arm);
-
-            const lightMesh = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.15, 0.4), new THREE.MeshBasicMaterial({ color: 0xffea88 }));
-            lightMesh.position.set(side * 1.4, 6.8, 0);
-            group.add(lightMesh);
-
-            group.position.set(x, 0, z);
-            scene.add(group);
-            streetlights.push(group);
-        }
-
-        for (let z = -roadLength / 2; z < roadLength / 2; z += 22) {
-            createBuilding(-18 - Math.random() * 5, z);
-            createBuilding(18 + Math.random() * 5, z);
-            createStreetLight(-8.2, z, 1);
-            createStreetLight(8.2, z, -1);
-        }
-
-        // --- GERADOR DE RODAS REALISTAS ---
-        function createRealisticWheel(radius, width) {
-            const wheelGroup = new THREE.Group();
-
-            // Pneu de Borracha
-            const tireMat = new THREE.MeshStandardMaterial({ color: 0x151515, roughness: 0.9, metalness: 0.1 });
-            const tireGeo = new THREE.CylinderGeometry(radius, radius, width, 24);
-            tireGeo.rotateZ(Math.PI / 2);
-            const tire = new THREE.Mesh(tireGeo, tireMat);
-            wheelGroup.add(tire);
-
-            // Calota/Aro Metálico
-            const rimMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.9, roughness: 0.1 });
-            const rimCenter = new THREE.Mesh(new THREE.CylinderGeometry(radius * 0.65, radius * 0.65, width + 0.02, 16), rimMat);
-            rimCenter.geometry.rotateZ(Math.PI / 2);
-            wheelGroup.add(rimCenter);
-
-            // Raios da Roda
-            const spokeMat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.8, roughness: 0.2 });
-            for (let i = 0; i < 5; i++) {
-                const spoke = new THREE.Mesh(new THREE.BoxGeometry(width + 0.03, radius * 1.1, radius * 0.12), spokeMat);
-                spoke.rotation.x = (i * Math.PI) / 2.5;
-                wheelGroup.add(spoke);
-            }
-
-            // Pinça de Freio Esportiva
-            const caliperMat = new THREE.MeshStandardMaterial({ color: 0xcc0000, metalness: 0.5, roughness: 0.3 });
-            const caliper = new THREE.Mesh(new THREE.BoxGeometry(width * 0.8, radius * 0.5, radius * 0.4), caliperMat);
-            caliper.position.set(0, radius * 0.3, 0);
-            wheelGroup.add(caliper);
-
-            return wheelGroup;
-        }
-
-        // --- MODELO DO SUPERCARRO DO JOGADOR ---
-        function createPlayerCarMesh() {
-            const carGroup = new THREE.Group();
-
-            // Materiais Automotivos PBR
-            const paintMat = new THREE.MeshPhysicalMaterial({ color: 0x00f0ff, metalness: 0.8, roughness: 0.15, clearcoat: 1.0, clearcoatRoughness: 0.05 });
-            const carbonMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5, metalness: 0.8 });
-            const glassMat = new THREE.MeshPhysicalMaterial({ color: 0x050a12, metalness: 0.9, roughness: 0.0, transparent: true, opacity: 0.85 });
-
-            // Base do Chassi
-            const baseMesh = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.35, 4.2), carbonMat);
-            baseMesh.position.y = 0.35;
-            carGroup.add(baseMesh);
-
-            // Lataria Esportiva
-            const bodyMesh = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.45, 3.8), paintMat);
-            bodyMesh.position.set(0, 0.65, 0.1);
-            carGroup.add(bodyMesh);
-
-            // Capô Inclinado
-            const hoodMesh = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.25, 1.4), paintMat);
-            hoodMesh.position.set(0, 0.6, -1.2);
-            hoodMesh.rotation.x = 0.1;
-            carGroup.add(hoodMesh);
-
-            // Cabine Aerodinâmica
-            const cabinMesh = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.5, 1.9), glassMat);
-            cabinMesh.position.set(0, 1.05, -0.1);
-            carGroup.add(cabinMesh);
-
-            // Aerofólio Traseiro Duplo
-            const wingSuppL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.4, 0.3), carbonMat);
-            wingSuppL.position.set(-0.7, 1.0, 1.8);
-            const wingSuppR = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.4, 0.3), carbonMat);
-            wingSuppR.position.set(0.7, 1.0, 1.8);
-            carGroup.add(wingSuppL, wingSuppR);
-
-            const wingBlade = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.06, 0.5), paintMat);
-            wingBlade.position.set(0, 1.2, 1.85);
-            carGroup.add(wingBlade);
-
-            // Escapamento Duplo Traseiro
-            const exhaustMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.9, roughness: 0.1 });
-            [-0.5, 0.5].forEach(x => {
-                const exhaust = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.4, 12), exhaustMat);
-                exhaust.rotation.x = Math.PI / 2;
-                exhaust.position.set(x, 0.4, 2.02);
-                carGroup.add(exhaust);
-            });
-
-            // Montagem das 4 Rodas
-            [[-1.12, 0.42, 1.25], [1.12, 0.42, 1.25], [-1.12, 0.42, -1.25], [1.12, 0.42, -1.25]].forEach(pos => {
-                const wheel = createRealisticWheel(0.42, 0.32);
-                wheel.position.set(...pos);
-                carGroup.add(wheel);
-            });
-
-            // Faróis Xenon com Projetor de Luz
-            const headlightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-            const headL = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.12, 0.1), headlightMat);
-            headL.position.set(-0.65, 0.65, -1.82);
-            const headR = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.12, 0.1), headlightMat);
-            headR.position.set(0.65, 0.65, -1.82);
-            carGroup.add(headL, headR);
-
-            const pLightL = new THREE.PointLight(0x00f0ff, 2.0, 35);
-            pLightL.position.set(-0.65, 0.65, -2.2);
-            carGroup.add(pLightL);
-            const pLightR = new THREE.PointLight(0x00f0ff, 2.0, 35);
-            pLightR.position.set(0.65, 0.65, -2.2);
-            carGroup.add(pLightR);
-
-            // Lanterna LED Traseira Continuada
-            const tailLight = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.1, 0.1), new THREE.MeshBasicMaterial({ color: 0xff0033 }));
-            tailLight.position.set(0, 0.75, 2.02);
-            carGroup.add(tailLight);
-
-            // Neon Underglow Azul Cyan
-            const underglow = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 4.4), new THREE.MeshBasicMaterial({ color: 0x00f0ff, transparent: true, opacity: 0.55 }));
-            underglow.rotation.x = -Math.PI / 2;
-            underglow.position.set(0, 0.08, 0);
-            carGroup.add(underglow);
-
-            return carGroup;
-        }
-
-        // --- MODELOS DE OBSTÁCULOS ALTAMENTE DETALHADOS ---
-
-        // OBSTÁCULO 1: CAMINHÃO DE CARGA PESADO (6 RODAS)
-        function createTruck() {
-            const group = new THREE.Group();
-            const cabinPaint = new THREE.MeshPhysicalMaterial({ color: 0xd2143a, metalness: 0.6, roughness: 0.2, clearcoat: 0.8 });
-            const boxMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.3, roughness: 0.6 });
-            const chromeMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, metalness: 0.95, roughness: 0.05 });
-            const glassMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.1 });
-
-            // Baú Corrugado
-            const box = new THREE.Mesh(new THREE.BoxGeometry(2.6, 2.2, 5.2), boxMat);
-            box.position.set(0, 1.8, 0.5);
-            group.add(box);
-
-            // Cabine Frontal
-            const cab = new THREE.Mesh(new THREE.BoxGeometry(2.5, 1.8, 1.8), cabinPaint);
-            cab.position.set(0, 1.4, -2.8);
-            group.add(cab);
-
-            // Para-brisa da Cabine
-            const windshield = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.7, 0.1), glassMat);
-            windshield.position.set(0, 1.75, -3.71);
-            group.add(windshield);
-
-            // Para-choque e Grade Cromada
-            const grill = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.6, 0.1), chromeMat);
-            grill.position.set(0, 0.7, -3.72);
-            group.add(grill);
-
-            // Rodas do Caminhão (6 Rodas)
-            [[-1.35, -2.8], [1.35, -2.8], [-1.35, 1.2], [1.35, 1.2], [-1.35, 2.2], [1.35, 2.2]].forEach(pos => {
-                const wheel = createRealisticWheel(0.5, 0.38);
-                wheel.position.set(pos[0], 0.5, pos[1]);
-                group.add(wheel);
-            });
-
-            // Lanternas Traseiras do Baú
-            const tailLights = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.2, 0.1), new THREE.MeshBasicMaterial({ color: 0xcc0000 }));
-            tailLights.position.set(0, 0.8, 3.11);
-            group.add(tailLights);
-
-            group.userData = { hitWidth: 2.6, hitLength: 7.0 };
-            return group;
-        }
-
-        // OBSTÁCULO 2: SEDAN ESPORTIVO EXECUTIVO
-        function createSedan(colorHex) {
-            const group = new THREE.Group();
-            const paintMat = new THREE.MeshPhysicalMaterial({ color: colorHex, metalness: 0.7, roughness: 0.2, clearcoat: 0.9 });
-            const glassMat = new THREE.MeshPhysicalMaterial({ color: 0x0a0a0a, metalness: 0.8, roughness: 0.1 });
-            const chromeMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.9, roughness: 0.2 });
-
-            // Carroceria Principais
-            const body = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.5, 4.4), paintMat);
-            body.position.y = 0.65;
-            group.add(body);
-
-            // Teto e Cabine
-            const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.55, 2.2), glassMat);
-            cabin.position.set(0, 1.15, -0.1);
-            group.add(cabin);
-
-            // Grade Frontal Detalhada
-            const grill = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.25, 0.1), chromeMat);
-            grill.position.set(0, 0.6, -2.21);
-            group.add(grill);
-
-            // Retrovisores
-            [-1.1, 1.1].forEach(x => {
-                const mirror = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.12, 0.15), paintMat);
-                mirror.position.set(x, 1.0, -0.7);
-                group.add(mirror);
-            });
-
-            // Rodas
-            [[-1.1, 0.4, 1.3], [1.1, 0.4, 1.3], [-1.1, 0.4, -1.3], [1.1, 0.4, -1.3]].forEach(pos => {
-                const wheel = createRealisticWheel(0.4, 0.32);
-                wheel.position.set(...pos);
-                group.add(wheel);
-            });
-
-            // Faróis e Lanternas
-            const headL = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.12, 0.1), new THREE.MeshBasicMaterial({ color: 0xfff5cc }));
-            headL.position.set(-0.65, 0.65, -2.21);
-            const headR = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.12, 0.1), new THREE.MeshBasicMaterial({ color: 0xfff5cc }));
-            headR.position.set(0.65, 0.65, -2.21);
-            group.add(headL, headR);
-
-            const tailLight = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.12, 0.1), new THREE.MeshBasicMaterial({ color: 0xee0000 }));
-            tailLight.position.set(0, 0.7, 2.21);
-            group.add(tailLight);
-
-            group.userData = { hitWidth: 2.1, hitLength: 4.4 };
-            return group;
-        }
-
-        // OBSTÁCULO 3: HYPERCAR TUNADO COM NEON
-        function createHypercar(colorHex, neonHex) {
-            const group = new THREE.Group();
-            const paintMat = new THREE.MeshPhysicalMaterial({ color: colorHex, metalness: 0.85, roughness: 0.1, clearcoat: 1.0 });
-            const carbonMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.4, metalness: 0.8 });
-
-            const body = new THREE.Mesh(new THREE.BoxGeometry(2.15, 0.4, 4.2), paintMat);
-            body.position.y = 0.48;
-            group.add(body);
-
-            const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.45, 1.8), new THREE.MeshPhysicalMaterial({ color: 0x050505, metalness: 0.9, roughness: 0.0 }));
-            cabin.position.set(0, 0.88, -0.2);
-            group.add(cabin);
-
-            // Aerofólio Extremo
-            const wing = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.08, 0.5), carbonMat);
-            wing.position.set(0, 1.15, 1.85);
-            group.add(wing);
-
-            // Tomada de Ar no Teto
-            const scoop = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.15, 0.6), carbonMat);
-            scoop.position.set(0, 1.15, -0.2);
-            group.add(scoop);
-
-            // Rodas
-            [[-1.12, 0.38, 1.25], [1.12, 0.38, 1.25], [-1.12, 0.38, -1.25], [1.12, 0.38, -1.25]].forEach(pos => {
-                const wheel = createRealisticWheel(0.38, 0.34);
-                wheel.position.set(...pos);
-                group.add(wheel);
-            });
-
-            // Neon vibrante no asfalto
-            const underglow = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 4.4), new THREE.MeshBasicMaterial({ color: neonHex, transparent: true, opacity: 0.7 }));
-            underglow.rotation.x = -Math.PI / 2;
-            underglow.position.set(0, 0.06, 0);
-            group.add(underglow);
-
-            // Lanternas Traseiras
-            const tailLight = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.08, 0.1), new THREE.MeshBasicMaterial({ color: 0xff0044 }));
-            tailLight.position.set(0, 0.6, 2.11);
-            group.add(tailLight);
-
-            group.userData = { hitWidth: 2.15, hitLength: 4.2 };
-            return group;
-        }
-
-        // --- INICIALIZAÇÃO DO JOGO ---
-        const playerCar = createPlayerCarMesh();
-        playerCar.position.set(0, 0, 10);
-        scene.add(playerCar);
-
-        camera.position.set(0, 4.2, 17.5);
-        camera.lookAt(playerCar.position.x, 0.9, playerCar.position.z - 10);
-
-        // Controles de Direção
-        const keys = { left: false, right: false };
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
-            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
-        });
-        window.addEventListener('keyup', (e) => {
-            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
-            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
-        });
-
-        // Loop de Animação e Lógica do Trânsito
-        let obstacles = [];
-        let score = 0;
-        let speed = 0.95;
-        let isGameOver = false;
-        let frameCounter = 0;
-
-        function spawnObstacle() {
-            const rand = Math.random();
-            let obstacle;
-
-            if (rand < 0.35) {
-                obstacle = createTruck();
-            } else if (rand < 0.7) {
-                const colors = [0x112244, 0x888888, 0x111111, 0x660000];
-                obstacle = createSedan(colors[Math.floor(Math.random() * colors.length)]);
-            } else {
-                const tunedStyles = [
-                    { body: 0x111111, neon: 0x00ff00 },
-                    { body: 0xcc0044, neon: 0xff00aa },
-                    { body: 0xee9900, neon: 0xff3300 }
-                ];
-                const style = tunedStyles[Math.floor(Math.random() * tunedStyles.length)];
-                obstacle = createHypercar(style.body, style.neon);
-            }
-            
-            const lanes = [-4.8, -1.6, 1.6, 4.8];
-            const laneX = lanes[Math.floor(Math.random() * lanes.length)];
-            
-            obstacle.position.set(laneX, 0, -120);
-            scene.add(obstacle);
-            obstacles.push(obstacle);
-        }
-
-        function animate() {
-            if (isGameOver) return;
-            requestAnimationFrame(animate);
-
-            // Física de Pilotagem Suave com Inclinação
-            const steerSpeed = 0.28;
-            const maxBound = (roadWidth / 2) - 1.6;
-
-            if (keys.left && playerCar.position.x > -maxBound) {
-                playerCar.position.x -= steerSpeed;
-                playerCar.rotation.z = 0.12;
-                playerCar.rotation.y = 0.05;
-            } else if (keys.right && playerCar.position.x < maxBound) {
-                playerCar.position.x += steerSpeed;
-                playerCar.rotation.z = -0.12;
-                playerCar.rotation.y = -0.05;
-            } else {
-                playerCar.rotation.z = 0;
-                playerCar.rotation.y = 0;
-            }
-
-            // Movimentação do Cenário
-            stripes.forEach(s => { s.position.z += speed; if (s.position.z > 30) s.position.z -= roadLength; });
-            buildings.forEach(b => { b.position.z += speed; if (b.position.z > 30) b.position.z -= roadLength; });
-            streetlights.forEach(sl => { sl.position.z += speed; if (sl.position.z > 30) sl.position.z -= roadLength; });
-
-            // Spawn Inteligente de Inimigos
-            frameCounter++;
-            if (frameCounter % Math.max(20, Math.floor(65 - score / 120)) === 0) {
-                spawnObstacle();
-            }
-
-            // Lógica de Movimento e Colisão Dinâmica
-            for (let i = obstacles.length - 1; i >= 0; i--) {
-                const obs = obstacles[i];
-                obs.position.z += speed;
-
-                const hitW = (obs.userData.hitWidth / 2) + 0.95;
-                const hitL = (obs.userData.hitLength / 2) + 1.8;
-
-                const dx = Math.abs(playerCar.position.x - obs.position.x);
-                const dz = Math.abs(playerCar.position.z - obs.position.z);
-
-                if (dx < hitW && dz < hitL) {
-                    isGameOver = true;
-                    document.getElementById('game-over').style.display = 'block';
-                }
-
-                if (obs.position.z > 25) {
-                    scene.remove(obs);
-                    obstacles.splice(i, 1);
-                }
-            }
-
-            // Progressão de Pontuação e Velocidade
-            score += 1;
-            speed += 0.00025;
-            document.getElementById('score').innerText = Math.floor(score / 10);
-
-            renderer.render(scene, camera);
-        }
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        animate();
-    </script>
 </body>
 </html>
